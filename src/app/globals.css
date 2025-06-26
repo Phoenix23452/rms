@@ -1,26 +1,114 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.75rem;
+
+  --background: hsl(30 30% 98%);
+  --foreground: hsl(20 10% 10%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(20 10% 10%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(20 10% 10%);
+  --primary: hsl(15 100% 60%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 14% 96%);
+  --secondary-foreground: hsl(20 10% 10%);
+  --muted: hsl(220 14% 96%);
+  --muted-foreground: hsl(20 10% 45%);
+  --accent: hsl(15 80% 96%);
+  --accent-foreground: hsl(15 80% 40%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(20 10% 90%);
+  --input: hsl(20 10% 90%);
+  --ring: hsl(15 100% 60%);
+
+  --sidebar-background: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(20 10% 10%);
+  --sidebar-primary: hsl(15 100% 60%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(15 80% 96%);
+  --sidebar-accent-foreground: hsl(15 80% 40%);
+  --sidebar-border: hsl(20 10% 90%);
+  --sidebar-ring: hsl(15 100% 60%);
+}
+
+.dark {
+  --background: hsl(20 10% 8%);
+  --foreground: hsl(20 10% 98%);
+  --card: hsl(20 10% 12%);
+  --card-foreground: hsl(20 10% 98%);
+  --popover: hsl(20 10% 12%);
+  --popover-foreground: hsl(20 10% 98%);
+  --primary: hsl(15 100% 60%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(20 10% 16%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(20 10% 16%);
+  --muted-foreground: hsl(20 10% 65%);
+  --accent: hsl(15 50% 20%);
+  --accent-foreground: hsl(15 80% 80%);
+  --destructive: hsl(0 62% 50%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(20 10% 20%);
+  --input: hsl(20 10% 20%);
+  --ring: hsl(15 100% 60%);
+
+  --sidebar-background: hsl(20 10% 10%);
+  --sidebar-foreground: hsl(20 10% 98%);
+  --sidebar-primary: hsl(15 100% 60%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(15 50% 20%);
+  --sidebar-accent-foreground: hsl(15 80% 80%);
+  --sidebar-border: hsl(20 10% 20%);
+  --sidebar-ring: hsl(15 100% 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
 }
