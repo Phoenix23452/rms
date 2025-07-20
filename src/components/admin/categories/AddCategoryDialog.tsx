@@ -1,52 +1,48 @@
-"use client";
+'use client';
 
-import { startTransition, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
-export default function AddCategoryDialog({ categories }: { categories: any }) {
+export default function AddCategoryDialog() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState({
-    name: "",
-    slug: "",
-    order: 0,
+  const [form, setForm] = useState({
+    name: '',
+    slug: '',
     status: true,
   });
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onAddCategory(category);
-    console.log("New Category:", category);
-    try {
-      const res = await fetch("/api/categories", {
-        method: "POST",
-        body: JSON.stringify(category),
-      });
 
-      if (!res.ok) throw new Error("Failed to create category");
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
 
-      const { data } = await res.json();
-      toast.success("Category created!");
-
-      // Optionally: update parent state or reload
+    if (res.ok) {
+      toast.success('Category created');
+      setForm({ name: '', slug: '', status: true });
       setOpen(false);
-    } catch (error) {
-      toast.error("Something went wrong.");
-      console.error(error);
+      router.refresh(); // Re-fetch SSR data
+    } else {
+      const { message } = await res.json();
+      toast.error(message || 'Failed to create category');
     }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    const slug = name.toLowerCase().replace(/\s+/g, '-');
+    setForm((prev) => ({ ...prev, name, slug }));
   };
 
   return (
@@ -68,14 +64,8 @@ export default function AddCategoryDialog({ categories }: { categories: any }) {
               id="name"
               name="name"
               placeholder="Enter category name"
-              value={category.name}
-              onChange={(e) =>
-                setCategory((prev) => ({
-                  ...prev,
-                  name: e.target.value,
-                  slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
-                }))
-              }
+              value={form.name}
+              onChange={handleNameChange}
               required
             />
           </div>
@@ -84,24 +74,24 @@ export default function AddCategoryDialog({ categories }: { categories: any }) {
             <Input
               id="slug"
               name="slug"
-              value={category.slug}
-              onChange={(e) =>
-                setCategory((prev) => ({ ...prev, slug: e.target.value }))
-              }
+              placeholder="category-slug"
+              value={form.slug}
+              onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
               required
             />
+            <p className="text-xs text-muted-foreground">
+              URL-friendly version of the name. Auto-generated but editable.
+            </p>
           </div>
           <div className="flex items-center space-x-2">
             <Switch
               id="status"
-              checked={category.status}
-              onCheckedChange={(checked) =>
-                setCategory((prev) => ({ ...prev, status: checked }))
-              }
+              checked={form.status}
+              onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
             />
             <Label htmlFor="status">Active</Label>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <DialogClose asChild>
               <Button variant="outline" type="button">
                 Cancel

@@ -14,6 +14,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Day {
+  Mon
+  Tue
+  Wed
+  Thu
+  Fri
+  Sat
+  Sun
+}
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
@@ -26,18 +36,69 @@ model Category {
 }
 
 model Product {
-  id           String   @id
-  name         String
-  slug         String   @unique
-  description  String?
-  categoryId   Int
-  regularPrice Float
-  salePrice    Float?
-  status       String
-  popular      Boolean  @default(false)
-  imageUrl     String?
-  category     Category @relation(fields: [categoryId], references: [id])
-  // variants     ProductVariant[]
+  id                 Int        @id @default(autoincrement())
+  name               String
+  slug               String     @unique
+  description        String?
+  regularPrice       Float
+  discountPercentage Float? // Optional: 0 to 100
+  isFeatured         Boolean    @default(false)
+  isPopular          Boolean    @default(false)
+  status             Boolean    @default(true)
+  image              String? // Optional image URL/path
+  categoryId         Int
+  category           Category   @relation(fields: [categoryId], references: [id])
+  variants           Variant[] // Optional relation (can be empty array)
+  dealItems          DealItem[]
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   @@map("products")
+}
+
+model Variant {
+  id        Int     @id @default(autoincrement())
+  name      String // e.g., "Regular", "Large"
+  price     Float
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("product_variants")
+}
+
+model Deal {
+  id           Int     @id @default(autoincrement())
+  name         String
+  regularPrice Float
+  offerPrice   Float?
+  description  String?
+  isFeatured   Boolean @default(false)
+  image        String?
+  status       Boolean @default(true)
+
+  availableFrom  String? // e.g., "10:00"
+  availableUntil String? // e.g., "22:00"
+  startDate      DateTime?
+  endDate        DateTime?
+
+  availableDays Day[] // enum-based days of the week ✅
+
+  dealItems DealItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("deals")
+}
+
+model DealItem {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  note      String?
+  dealId    Int
+  deal      Deal    @relation(fields: [dealId], references: [id])
+
+  @@map("deal_items")
 }
