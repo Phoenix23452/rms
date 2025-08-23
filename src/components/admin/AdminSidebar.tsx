@@ -46,13 +46,13 @@ export const AdminSidebar = () => {
         <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
       </div>
 
-      <nav className="mt-6 pb-20 px-3">
+      <nav className="mt-6 space-y-2 pb-20 px-3">
         {sidebarItems.map(({ to, icon: Icon, label, end }) => (
           <Link
             key={to}
             href={to}
             className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-colors",
               isActive(to, end)
                 ? "bg-primary text-white"
                 : "text-gray-700 hover:bg-gray-100",

@@ -3,7 +3,7 @@ import { createItemAPIHandlers } from "@/lib/apiHandler";
 import ProductRepository from "@/repos/ProductRepsitory";
 
 const repo = new ProductRepository();
-const handlers = createItemAPIHandlers(repo, "category");
+const handlers = createItemAPIHandlers(repo, "product");
 
 export const GET = handlers.GET;
 export const PUT = handlers.PUT;

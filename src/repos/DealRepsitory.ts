@@ -4,6 +4,6 @@ import BaseRepository from "@/repos/BaseRepository";
 
 export default class DealRepository extends BaseRepository<Deal> {
   constructor() {
-    super(prisma.category);
+    super(prisma.deal);
   }
 }

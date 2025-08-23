@@ -61,7 +61,7 @@ export default function CategoriesClient({
               </tr>
             </thead>
             <tbody>
-              {filtered.map((cat) => (
+              {filtered?.map((cat) => (
                 <CategoryRow
                   key={cat.id}
                   category={cat}
