@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/hooks/use-toast";
 import {
   SearchIcon,
   FilterIcon,
@@ -45,7 +44,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { getCategories } from "./actions";
+import { deleteProduct, getCategories, updateProduct } from "./actions";
+import { toast } from "sonner";
 
 // Mock data for products
 const products = [
@@ -221,7 +221,6 @@ const ProductsClient = ({
     setCurrentProduct(product);
     setEditedProduct({ ...product }); // Create a copy to edit
     setEditDialogOpen(true);
-    console.log(editedProduct);
   };
 
   const handleDeleteProduct = (product: any) => {
@@ -229,39 +228,55 @@ const ProductsClient = ({
     setDeleteDialogOpen(true);
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!editedProduct) return;
 
-    // In a real application, we would make an API call here
-    // For now, we'll just update the product in our local array
-    const index = products.findIndex((p) => p.id === editedProduct.id);
-    if (index !== -1) {
-      products[index] = { ...editedProduct };
+    try {
+      const res = await updateProduct(editedProduct.id, editedProduct);
+
+      if (res?.success) {
+        toast.success("Product Updated", {
+          description: `${editedProduct.name} has been updated successfully.`,
+        });
+      } else {
+        toast.error("Update Failed", {
+          description: res?.message || "Something went wrong.",
+        });
+      }
+
+      setEditDialogOpen(false);
+    } catch (err) {
+      toast.error("Update Failed", {
+        description: "An error occurred while updating the product.",
+      });
+      console.error(err);
     }
-
-    setEditDialogOpen(false);
-    toast({
-      title: "Product Updated",
-      description: `${editedProduct.name} has been updated successfully.`,
-    });
   };
-
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!currentProduct) return;
 
-    // In a real application, we would make an API call here
-    // For now, we'll just remove the product from our local array
-    const index = products.findIndex((p) => p.id === currentProduct.id);
-    if (index !== -1) {
-      products.splice(index, 1);
-    }
+    try {
+      const res = await deleteProduct(currentProduct.id);
 
-    setDeleteDialogOpen(false);
-    toast({
-      title: "Product Deleted",
-      description: `${currentProduct.name} has been deleted.`,
-      variant: "destructive",
-    });
+      if (res?.success) {
+        toast.success("Product Deleted", {
+          description: `${currentProduct.name} has been deleted.`,
+        });
+      } else {
+        toast.error("Deletion Failed", {
+          description:
+            `${res?.message} '\n' ${res?.error?.summary}` ||
+            "Failed to delete the product.",
+        });
+      }
+    } catch (error) {
+      toast.error("Error", {
+        description: "An unexpected error occurred.",
+      });
+      console.error("Delete error:", error);
+    } finally {
+      setDeleteDialogOpen(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -274,18 +289,17 @@ const ProductsClient = ({
         thumbnail: URL.createObjectURL(e.target.files[0]),
       });
 
-      toast({
-        title: "Image Updated",
+      toast("Image Updated", {
         description: "Product image has been updated. Save changes to apply.",
       });
     }
   };
 
   const updateProductField = (field: string, value: any) => {
-    setEditedProduct({
-      ...editedProduct,
+    setEditedProduct((prev: any) => ({
+      ...prev,
       [field]: value,
-    });
+    }));
   };
 
   const updateVariantField = (index: number, field: string, value: any) => {
@@ -302,7 +316,7 @@ const ProductsClient = ({
   };
 
   const addVariant = () => {
-    const newVariant = { size: "New Size", price: 0 };
+    const newVariant = { name: "New Name", price: 0 };
     setEditedProduct({
       ...editedProduct,
       variants: [...editedProduct.variants, newVariant],
@@ -697,8 +711,9 @@ const ProductsClient = ({
                       const selectedCategory = categories.find(
                         (cat) => cat.slug === selectedSlug,
                       );
-                      updateProductField("category", selectedCategory); // You can also just pass selectedCategory.id
-                      console.log(editedProduct.category);
+
+                      updateProductField("category", selectedCategory);
+                      updateProductField("categoryId", selectedCategory?.id);
                     }}
                   >
                     <SelectTrigger id="product-category">
@@ -706,7 +721,7 @@ const ProductsClient = ({
                     </SelectTrigger>
                     <SelectContent>
                       {categories
-                        .filter((c) => c.name !== "All Categories")
+                        ?.filter((c) => c.name !== "All Categories")
                         .map((category) => (
                           <SelectItem key={category.id} value={category.slug}>
                             {category.name}
@@ -728,8 +743,8 @@ const ProductsClient = ({
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
+                      <SelectItem value={true}>Active</SelectItem>
+                      <SelectItem value={false}>Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -758,11 +773,11 @@ const ProductsClient = ({
                       value={editedProduct.discountPercentage || ""}
                       onChange={(e) =>
                         updateProductField(
-                          "offerPrice",
+                          "discountPercentage",
                           e.target.value ? parseFloat(e.target.value) : null,
                         )
                       }
-                      placeholder="No offer"
+                      placeholder="No Discount"
                     />
                   </div>
                 </div>
@@ -777,6 +792,17 @@ const ProductsClient = ({
                     }
                   />
                   <Label htmlFor="product-popular">Mark as popular</Label>
+                </div>
+                <div className="md:col-span-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="product-feature"
+                    checked={editedProduct.isFeatured}
+                    onChange={(e) =>
+                      updateProductField("isPopular", e.target.checked)
+                    }
+                  />
+                  <Label htmlFor="product-popular">Mark as Featured</Label>
                 </div>
 
                 <div className="md:col-span-2">
@@ -798,7 +824,7 @@ const ProductsClient = ({
                         placeholder="Size/Variant"
                         value={variant.name}
                         onChange={(e) =>
-                          updateVariantField(index, "size", e.target.value)
+                          updateVariantField(index, "name", e.target.value)
                         }
                         className="flex-1"
                       />

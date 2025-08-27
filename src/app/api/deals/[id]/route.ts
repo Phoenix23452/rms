@@ -4,7 +4,7 @@ import DealRepository from "@/repos/DealRepsitory";
 
 const repo = new DealRepository();
 
-const handlers = createItemAPIHandlers(repo, "category");
+const handlers = createItemAPIHandlers(repo, "deal");
 
 export const GET = handlers.GET;
 export const PUT = handlers.PUT;

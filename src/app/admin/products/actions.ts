@@ -49,7 +49,7 @@ export async function deleteProduct(id: number) {
   const res = await fetch(`${API_BASE}/api/products/${id}`, {
     method: "DELETE",
   });
-  revalidatePath("/products");
+  revalidatePath("/admin/products");
   return res.json();
 }
 
@@ -66,4 +66,14 @@ export async function uploadImage(file: File) {
   if (!res.ok) throw new Error("Image upload failed");
   const data = await res.json();
   return data.url; // 👈 image URL from ImageKit
+}
+
+export async function createDeal(deal: any) {
+  const res = await fetch(`${API_BASE}/api/deals`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(deal),
+  });
+  revalidatePath("/admin/products");
+  return res.json();
 }
