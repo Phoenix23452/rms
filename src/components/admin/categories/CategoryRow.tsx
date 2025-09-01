@@ -68,7 +68,10 @@ export const CategoryRow = ({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onSaveEdit(edit) && setEditing(false)}
+              onClick={() => {
+                onSaveEdit(edit);
+                setEditing(false);
+              }}
             >
               <Save className="h-4 w-4" />
             </Button>
