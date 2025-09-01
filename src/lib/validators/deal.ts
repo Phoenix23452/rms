@@ -24,7 +24,11 @@ export const dealSchema = z
     description: z.string().optional(),
 
     isFeatured: z.boolean().optional(),
-    image: z.string().url("Image must be a valid URL").optional(),
+    image: z
+      .string()
+      .url("Image must be a valid URL")
+      .optional()
+      .or(z.literal("")),
     status: z.boolean({ required_error: "Status is required" }),
 
     availableFrom: z.string().regex(/^\d{2}:\d{2}$/, {

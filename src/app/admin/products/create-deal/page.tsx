@@ -14,10 +14,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Upload, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Upload, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getProducts } from "../actions";
+import { createDeal, getProducts } from "../actions";
 import { af } from "date-fns/locale";
+import { toast } from "sonner";
 
 const useNavigation = () => {
   const router = useRouter();
@@ -54,6 +55,8 @@ type Deal = {
 const CreateDealPage = () => {
   const navigate = useNavigation();
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [deal, setDeal] = useState<Deal>({
     name: "",
     regularPrice: 0,
@@ -63,10 +66,8 @@ const CreateDealPage = () => {
     status: true,
     availableFrom: "10:00",
     availableUntil: "22:00",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
+    startDate: new Date().toISOString(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     availableDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     image: "", // optional if you're handling image upload
     dealItems: [],
@@ -117,10 +118,69 @@ const CreateDealPage = () => {
   };
   console.log(availableProducts);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    console.log("Deal to be submitted:", deal);
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log("Deal to be submitted:", deal);
+    try {
+      // Optional validation
+      if (!deal.name || deal.dealItems.length === 0) {
+        toast.error("Missing required fields", {
+          description: "Add a deal name and at least one item.",
+        });
+        return;
+      }
+
+      let imageUrl = imagePreview || "";
+      if (imageFile instanceof File) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", imageFile);
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formDataUpload,
+        });
+
+        if (!uploadRes.ok) throw new Error("Image upload failed");
+
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.url;
+      }
+
+      const dealToSubmit = {
+        ...deal,
+        image: imageUrl,
+      };
+
+      const response = await createDeal(dealToSubmit);
+      console.log(response);
+      if (response?.success || response?.id) {
+        toast.success("Deal created successfully!", {
+          description: "You’ll be redirected shortly.",
+        });
+        setTimeout(() => {
+          navigate("/admin/products");
+        }, 1500);
+      } else {
+        toast.error("Failed to create deal", {
+          description: `${response.message} \n ${response.error.summary} `,
+        });
+      }
+    } catch (error) {
+      console.error("Error creating deal:", error);
+      toast.error("Something went wrong", {
+        description: "Unable to create the deal. Please try again.",
+      });
+    }
     // TODO: Call backend API to save the deal
     // await createDeal(deal);
   };
@@ -139,7 +199,7 @@ const CreateDealPage = () => {
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <Card>
-          <CardHeader d>
+          <CardHeader>
             <CardTitle>Deal Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -174,7 +234,7 @@ const CreateDealPage = () => {
                   step="0.01"
                   value={deal.offerPrice}
                   onChange={(e) =>
-                    setDeal({ ...deal, offerPrice: e.target.value })
+                    setDeal({ ...deal, offerPrice: Number(e.target.value) })
                   }
                 />
                 <p className="text-sm text-muted-foreground">
@@ -234,21 +294,49 @@ const CreateDealPage = () => {
             <CardTitle>Deal Image</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-              <div className="mx-auto w-32 h-32 flex items-center justify-center bg-muted rounded-lg mb-4">
-                <Upload className="h-10 w-10 text-muted-foreground" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium">
-                  Drag and drop an image here, or click to browse
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Recommended size: 600 x 400px. Max file size: 5MB
-                </p>
-                <Button variant="outline" size="sm" className="mx-auto">
-                  Browse
-                </Button>
-              </div>
+            <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              {imagePreview ? (
+                <div className="mx-auto max-w-xs flex flex-col items-center">
+                  <img
+                    src={imagePreview}
+                    alt="Deal preview"
+                    className="h-32 w-32 object-cover rounded-lg mb-4"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" /> Remove Image
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="mx-auto w-32 h-32 flex items-center justify-center bg-muted rounded-lg mb-4">
+                    <Upload className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById("deal-image-upload")?.click();
+                    }}
+                  >
+                    Browse
+                  </Button>
+                  <Input
+                    id="deal-image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -290,7 +378,7 @@ const CreateDealPage = () => {
                         setDeal({ ...deal, dealItems: updatedItems });
                       }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Product" />
                       </SelectTrigger>
                       <SelectContent>
@@ -299,8 +387,15 @@ const CreateDealPage = () => {
                           <SelectItem
                             key={product.id}
                             value={product.id.toString()}
+                            className=""
                           >
-                            {product.name} - ${product.regularPrice.toFixed(2)}
+                            <div className="flex justify-between w-66">
+                              <span>{product.name}</span>
+                              <span>---</span>
+                              <span className=" text-green-500">
+                                ${product.regularPrice.toFixed(2)}
+                              </span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -404,9 +499,12 @@ const CreateDealPage = () => {
                   <Input
                     type="date"
                     id="dateFrom"
-                    value={deal.startDate}
+                    value={deal.startDate?.slice(0, 10)}
                     onChange={(e) =>
-                      setDeal({ ...deal, startDate: e.target.value })
+                      setDeal({
+                        ...deal,
+                        startDate: new Date(e.target.value).toISOString(),
+                      })
                     }
                   />
                 </div>
@@ -415,9 +513,12 @@ const CreateDealPage = () => {
                   <Input
                     type="date"
                     id="dateTo"
-                    value={deal.endDate}
+                    value={deal.endDate?.slice(0, 10)}
                     onChange={(e) =>
-                      setDeal({ ...deal, endDate: e.target.value })
+                      setDeal({
+                        ...deal,
+                        endDate: new Date(e.target.value).toISOString(),
+                      })
                     }
                   />
                 </div>

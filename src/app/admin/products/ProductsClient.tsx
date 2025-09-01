@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   SearchIcon,
   FilterIcon,
@@ -47,151 +47,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct, getCategories, updateProduct } from "./actions";
 import { toast } from "sonner";
 
-// Mock data for products
-const products = [
-  {
-    id: 1,
-    name: "Chicken Burger",
-    slug: "chicken-burger",
-    category: "Burgers",
-    status: "Active",
-    price: 8.5,
-    offerPrice: null,
-    isPopular: true,
-    thumbnail: "https://placehold.co/100x100",
-    variants: [
-      { size: "Regular", price: 8.5 },
-      { size: "Large", price: 10.5 },
-    ],
-    description:
-      "Juicy chicken patty with fresh lettuce, tomato, and our special sauce on a toasted bun.",
-  },
-  {
-    id: 2,
-    name: "Margherita Pizza",
-    slug: "margherita-pizza",
-    category: "Pizza",
-    status: "Active",
-    price: 11.99,
-    offerPrice: 9.99,
-    isPopular: true,
-    thumbnail: "https://placehold.co/100x100",
-    variants: [
-      { size: "Small", price: 11.99 },
-      { size: "Medium", price: 14.99 },
-      { size: "Large", price: 17.99 },
-    ],
-    description:
-      "Classic pizza with tomato sauce, mozzarella cheese, and fresh basil.",
-  },
-  {
-    id: 3,
-    name: "Grilled Fish",
-    slug: "grilled-fish",
-    category: "Fish",
-    status: "Active",
-    price: 12.5,
-    offerPrice: null,
-    isPopular: false,
-    thumbnail: "https://placehold.co/100x100",
-    variants: [{ size: "Regular", price: 12.5 }],
-    description:
-      "Fresh fish fillet grilled to perfection, served with a side of vegetables and lemon.",
-  },
-  {
-    id: 4,
-    name: "Chocolate Milkshake",
-    slug: "chocolate-milkshake",
-    category: "Beverages",
-    status: "Active",
-    price: 4.5,
-    offerPrice: null,
-    isPopular: false,
-    thumbnail: "https://placehold.co/100x100",
-    variants: [
-      { size: "Small", price: 4.5 },
-      { size: "Regular", price: 5.5 },
-      { size: "Large", price: 6.5 },
-    ],
-    description:
-      "Rich and creamy chocolate milkshake topped with whipped cream.",
-  },
-  {
-    id: 5,
-    name: "French Fries",
-    slug: "french-fries",
-    category: "Sides",
-    status: "Active",
-    price: 3.5,
-    offerPrice: null,
-    isPopular: true,
-    thumbnail: "https://placehold.co/100x100",
-    variants: [
-      { size: "Small", price: 3.5 },
-      { size: "Medium", price: 4.5 },
-      { size: "Large", price: 5.5 },
-    ],
-    description: "Crispy golden fries served with ketchup.",
-  },
-];
-
-// Mock data for deals
-const deals = [
-  {
-    id: 1,
-    name: "Family Feast",
-    price: 35.99,
-    offerPrice: 29.99,
-    status: "Active",
-    thumbnail: "https://placehold.co/100x100",
-    items: [
-      "2x Large Pizzas",
-      "1x Garlic Bread",
-      "1x 2L Soft Drink",
-      "1x Large Fries",
-    ],
-    description:
-      "The perfect meal for the whole family! Includes two large pizzas of your choice, garlic bread, soft drink, and fries.",
-  },
-  {
-    id: 2,
-    name: "Burger Combo",
-    price: 12.99,
-    offerPrice: 10.99,
-    status: "Active",
-    thumbnail: "https://placehold.co/100x100",
-    items: ["1x Chicken Burger", "1x Medium Fries", "1x Medium Soft Drink"],
-    description:
-      "Our popular chicken burger with medium fries and a soft drink of your choice.",
-  },
-  {
-    id: 3,
-    name: "Weekend Special",
-    price: 24.99,
-    offerPrice: null,
-    status: "Inactive",
-    thumbnail: "https://placehold.co/100x100",
-    items: [
-      "1x Medium Pizza",
-      "1x Garlic Bread",
-      "2x Regular Fries",
-      "2x Regular Soft Drinks",
-    ],
-    description:
-      "Perfect for a weekend treat. Medium pizza with garlic bread, fries, and drinks.",
-  },
-];
-
-// Available product categories
-
 const ProductsClient = ({
   initialProducts,
   categories,
+  deals,
 }: {
   initialProducts: Product[];
   categories: Category[];
+  deals: Deal[];
 }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("products");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -213,9 +79,18 @@ const ProductsClient = ({
   });
 
   // Filter deals based on search query
-  const filteredDeals = deals.filter((deal) => {
+  const filteredDeals = deals?.filter((deal) => {
     return deal.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
+  // Sync active tab with query param on mount
+  useEffect(() => {
+    if (searchParams.has("deals")) {
+      setActiveTab("deals");
+    } else {
+      setActiveTab("products");
+    }
+  }, [searchParams]);
 
   const handleEditProduct = (product: any) => {
     setCurrentProduct(product);
@@ -225,6 +100,10 @@ const ProductsClient = ({
 
   const handleDeleteProduct = (product: any) => {
     setCurrentProduct(product);
+    setDeleteDialogOpen(true);
+  };
+  const handleDeleteDeal = (deal: Deal) => {
+    setCurrentProduct(deal);
     setDeleteDialogOpen(true);
   };
 
@@ -353,9 +232,15 @@ const ProductsClient = ({
       </div>
 
       <Tabs
-        defaultValue="products"
         value={activeTab}
-        onValueChange={setActiveTab}
+        onValueChange={(value) => {
+          setActiveTab(value);
+          if (value === "deals") {
+            router.replace("/admin/products?deals");
+          } else {
+            router.replace("/admin/products");
+          }
+        }}
         className="w-full"
       >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
@@ -434,7 +319,10 @@ const ProductsClient = ({
                           <td className="py-3 px-4">
                             <div className="flex items-center">
                               <img
-                                src={product.image}
+                                src={
+                                  product.image ||
+                                  "https://placehold.co/100x100"
+                                }
                                 alt={product.name}
                                 className="h-12 w-12 rounded-md object-cover mr-3"
                               />
@@ -566,7 +454,9 @@ const ProductsClient = ({
                           <td className="py-3 px-4">
                             <div className="flex items-center">
                               <img
-                                src={deal.thumbnail}
+                                src={
+                                  deal.image || "https://placehold.co/100x100"
+                                }
                                 alt={deal.name}
                                 className="h-12 w-12 rounded-md object-cover mr-3"
                               />
@@ -579,7 +469,7 @@ const ProductsClient = ({
                               size="sm"
                               className="h-7 text-xs"
                             >
-                              {deal.items.length} items
+                              {deal?.dealItems?.length}
                               <ChevronDown className="ml-1 h-3 w-3" />
                             </Button>
                           </td>
@@ -590,24 +480,24 @@ const ProductsClient = ({
                                   ${deal.offerPrice.toFixed(2)}
                                 </span>
                                 <span className="text-sm text-muted-foreground line-through ml-2">
-                                  ${deal.price.toFixed(2)}
+                                  ${deal.regularPrice.toFixed(2)}
                                 </span>
                               </div>
                             ) : (
                               <span className="font-medium">
-                                ${deal.price.toFixed(2)}
+                                ${deal.regularPrice.toFixed(2)}
                               </span>
                             )}
                           </td>
                           <td className="py-3 px-4">
                             <Badge
                               className={
-                                deal.status === "Active"
+                                deal.status
                                   ? "bg-green-100 text-green-800 hover:bg-green-100"
                                   : "bg-gray-100 text-gray-800 hover:bg-gray-100"
                               }
                             >
-                              {deal.status}
+                              {deal.status ? "Active" : "In Active"}
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-right">
@@ -618,6 +508,7 @@ const ProductsClient = ({
                               variant="ghost"
                               size="sm"
                               className="text-red-500"
+                              onClick={() => handleDeleteDeal(deal)}
                             >
                               <Trash className="h-4 w-4 mr-1" /> Delete
                             </Button>
@@ -734,17 +625,17 @@ const ProductsClient = ({
                 <div>
                   <Label htmlFor="product-status">Status</Label>
                   <Select
-                    value={editedProduct.status}
+                    value={`'${editedProduct.status}'`}
                     onValueChange={(value) =>
-                      updateProductField("status", value)
+                      updateProductField("status", value === "true")
                     }
                   >
                     <SelectTrigger id="product-status">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={true}>Active</SelectItem>
-                      <SelectItem value={false}>Inactive</SelectItem>
+                      <SelectItem value={"true"}>Active</SelectItem>
+                      <SelectItem value={"false"}>Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

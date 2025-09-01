@@ -24,6 +24,33 @@ enum Day {
   Sun
 }
 
+enum MembershipTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum AddressType {
+  HOME
+  WORK
+  OTHER
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
@@ -101,4 +128,86 @@ model DealItem {
   deal      Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
   @@map("deal_items")
+}
+
+model Customer {
+  id             Int            @id @default(autoincrement())
+  customerCode   String         @unique // e.g., CUST-2451
+  fullName       String
+  email          String         @unique
+  phone          String
+  joinedAt       DateTime       @default(now())
+  membershipTier MembershipTier @default(BRONZE)
+  points         Int            @default(0)
+  about          String? // Optional
+  status         CustomerStatus @default(ACTIVE)
+
+  orders    Order[] // Relation to Order
+  addresses Address[] // Relation to Address
+
+  @@map("customers")
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId    Int
+  totalAmount   Float
+  subtotal      Float
+  deliveryFee   Float       @default(0)
+  tax           Float       @default(0)
+  tip           Float       @default(0)
+  status        OrderStatus @default(PLACED)
+  paymentMethod String // e.g., "Card (**** 1234)"
+  createdAt     DateTime    @default(now())
+  orderType     String // e.g., "Delivery" or "Pickup"
+  deliveryNote  String?
+  address       Address?    @relation(fields: [addressId], references: [id])
+  addressId     Int?
+
+  items OrderItem[]
+
+  timeline OrderTimeline[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int
+  variant   Variant? @relation(fields: [variantId], references: [id])
+  variantId Int?
+  quantity  Int
+  unitPrice Float // Store at the time of order
+  price     Float // unitPrice * quantity
+  note      String? // Optional note (e.g., spicy, no onions)
+
+  @@map("order_items")
+}
+
+model OrderTimeline {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int
+  status    String // e.g., "Order Placed", "Payment Received"
+  timestamp DateTime @default(now())
+
+  @@map("order_timeline")
+}
+
+model Address {
+  id            Int         @id @default(autoincrement())
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId    Int
+  type          AddressType
+  street        String
+  city          String
+  state         String
+  postalCode    String
+  isDefault     Boolean     @default(false)
+  deliveryNotes String? // Optional
+  pinLocation   String // Hidden from user, used internally
+  orders        Order[]
+  @@map("addresses")
 }

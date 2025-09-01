@@ -74,6 +74,25 @@ export async function createDeal(deal: any) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(deal),
   });
-  revalidatePath("/admin/products");
+  revalidatePath("/admin/products?deals");
+  return res.json();
+}
+
+export async function getDeals() {
+  const res = await fetch(
+    `${API_BASE}/api/deals?include=dealItems.product.variants`,
+    {
+      cache: "no-store",
+    },
+  );
+  const { data } = await res.json();
+  return data;
+}
+
+export async function deleteDeal(id: number) {
+  const res = await fetch(`${API_BASE}/api/deals/${id}`, {
+    method: "DELETE",
+  });
+  revalidatePath("/admin/products?deals");
   return res.json();
 }
