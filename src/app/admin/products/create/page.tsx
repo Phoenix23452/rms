@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
-  SelectContent,  
+  SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -60,6 +60,7 @@ export default function CreateProductPage() {
 
   const handleVariantChange = (index: number, field: string, value: any) => {
     const updated = [...variants];
+    // @ts-ignore
     updated[index][field] = field === "price" ? parseFloat(value) : value;
     setVariants(updated);
   };
