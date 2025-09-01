@@ -90,6 +90,8 @@ model Variant {
   productId Int
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  orderItems OrderItem[]
+
   @@map("product_variants")
 }
 
@@ -209,5 +211,6 @@ model Address {
   deliveryNotes String? // Optional
   pinLocation   String // Hidden from user, used internally
   orders        Order[]
+
   @@map("addresses")
 }
