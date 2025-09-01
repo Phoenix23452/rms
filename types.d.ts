@@ -68,6 +68,77 @@ type DealItem = {
   deal?: Deal;
 };
 
+type Customer = {
+  id: number;
+  customerCode: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  joinedAt: string;
+  membershipTier: MembershipTier;
+  points: number;
+  about?: string | null;
+  status: CustomerStatus;
+
+  orders?: Order[];
+  addresses?: Address[];
+};
+
+type Order = {
+  id: number;
+  customerId: number;
+  customer?: Customer;
+  totalAmount: number;
+  subtotal: number;
+  deliveryFee: number;
+  tax: number;
+  tip: number;
+  status: OrderStatus;
+  paymentMethod: string;
+  createdAt: string;
+  orderType: string;
+  deliveryNote?: string | null;
+  addressId?: number | null;
+  address?: Address | null;
+
+  items?: OrderItem[];
+  timeline?: OrderTimeline[];
+};
+
+type OrderItem = {
+  id: number;
+  orderId: number;
+  order?: Order;
+  variantId?: number | null;
+  variant?: Variant | null;
+  quantity: number;
+  unitPrice: number;
+  price: number;
+  note?: string | null;
+};
+
+type OrderTimeline = {
+  id: number;
+  orderId: number;
+  order?: Order;
+  status: string;
+  timestamp: string;
+};
+type Address = {
+  id: number;
+  customerId: number;
+  customer?: Customer;
+  type: AddressType;
+  street: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  isDefault: boolean;
+  deliveryNotes?: string | null;
+  pinLocation: string;
+  orders?: Order[];
+};
+
 enum Day {
   Mon = "Mon",
   Tue = "Tue",
@@ -76,4 +147,31 @@ enum Day {
   Fri = "Fri",
   Sat = "Sat",
   Sun = "Sun",
+}
+
+enum MembershipTier {
+  BRONZE = "BRONZE",
+  SILVER = "SILVER",
+  GOLD = "GOLD",
+  PLATINUM = "PLATINUM",
+}
+
+enum AddressType {
+  HOME = "HOME",
+  WORK = "WORK",
+  OTHER = "OTHER",
+}
+
+enum CustomerStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  BANNED = "BANNED",
+}
+
+enum OrderStatus {
+  PLACED = "PLACED",
+  CONFIRMED = "CONFIRMED",
+  DISPATCHED = "DISPATCHED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
 }
