@@ -218,7 +218,7 @@ const CreateDealPage = () => {
                 <Label htmlFor="price">Regular Price ($)</Label>
                 <Input
                   id="price"
-                  placeholder={0.0}
+                  placeholder={"0.0"}
                   type="number"
                   step="0.01"
                   value={deal.regularPrice}
