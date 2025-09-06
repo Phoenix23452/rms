@@ -11,6 +11,7 @@ export default async function ClientLayout({
   children: ReactNode;
 }) {
   const ua = (await headers()).get("user-agent");
+  console.log("Device detection", ua);
   const isMobile = isMobileDevice(ua);
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -25,7 +26,7 @@ export default async function ClientLayout({
       </div>
 
       <div
-        className={`flex-1 ${isMobile ? "pt-16 pb-16" : ""} ${shouldShowBottomNav() ? "pb-16" : ""}`}
+        className={`flex-1 ${isMobile ? "pt-16 pb-16" : ""} ${isMobile ? "pb-16" : ""}`}
       >
         <ScrollContent
           // currentLocation={currentLocation}
@@ -37,15 +38,11 @@ export default async function ClientLayout({
       </div>
 
       {/* Bottom Navigation - Fixed for app-like experience */}
-      {shouldShowBottomNav() && (
+      {isMobile && (
         <div className="fixed bottom-0 left-0 right-0 z-30">
           <MobileNavigation />
         </div>
       )}
     </div>
   );
-}
-
-function shouldShowBottomNav() {
-  return true; // Replace with real logic if needed
 }

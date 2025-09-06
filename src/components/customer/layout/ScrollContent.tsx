@@ -21,7 +21,7 @@ export const ScrollContent = ({
       className="flex-1"
       style={{ height: isMobile ? "calc(100vh - 4rem)" : "calc(100vh - 4rem)" }}
     >
-      <main className={isMobile ? "pb-16 pt-4" : "pt-16"}>{children}</main>
+      <main className={isMobile ? "pb-16 pt-4" : ""}>{children}</main>
 
       {!isMobile && <Footer location={currentLocation || mainLocation} />}
     </ScrollArea>
