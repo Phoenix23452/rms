@@ -33,11 +33,9 @@ import {
   Plus,
   Gift,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { LoyaltyCard } from "@/components/customer/LoyaltyCard";
 import { useLoyalty } from "@/hooks/use-loyalty";
-import { AddAddressDialog } from "@/components/customer/profile/AddAddressDialog";
+// import { AddAddressDialog } from "@/components/customer/profile/AddAddressDialog";
 import { OrderDetailsDialog } from "@/components/customer/profile/OrderDetailsDialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -157,7 +155,7 @@ const userData = {
 };
 
 const CustomerProfilePage = () => {
-  const { logout } = useAuth();
+  // const { logout } = useAuth();
   const navigate = useRouter();
   const [activeTab, setActiveTab] = useState("profile");
   //   const { points, redeemPoints } = useLoyalty();
@@ -649,7 +647,10 @@ const CustomerProfilePage = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-center">
-                  <Button variant="outline" onClick={() => navigate("/orders")}>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate.push("/orders")}
+                  >
                     View All Orders
                   </Button>
                 </CardFooter>
@@ -689,9 +690,7 @@ const CustomerProfilePage = () => {
                           size="sm"
                           className="flex-shrink-0"
                           onClick={() => {
-                            toast({
-                              description: `Added ${item.name} to cart`,
-                            });
+                            toast(`Added ${item.name} to cart`);
                           }}
                         >
                           Add to Cart
@@ -701,7 +700,10 @@ const CustomerProfilePage = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-center">
-                  <Button variant="outline" onClick={() => navigate("/menu")}>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate.push("/menu")}
+                  >
                     Browse Menu
                   </Button>
                 </CardFooter>
@@ -804,7 +806,7 @@ const CustomerProfilePage = () => {
       </div>
 
       {/* Add Address Dialog */}
-      <AddAddressDialog
+      {/* <AddAddressDialog
         open={isAddAddressOpen}
         onOpenChange={setIsAddAddressOpen}
         onAddressAdded={() => {
@@ -814,7 +816,7 @@ const CustomerProfilePage = () => {
             description: "Your new address has been saved successfully.",
           });
         }}
-      />
+      /> */}
 
       {/* Order Details Dialog */}
       <OrderDetailsDialog

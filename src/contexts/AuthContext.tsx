@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cleanupAuthState();
 
       // Global sign out to clear all sessions
-      const { error } = await supabase.auth.signOut({ scope: "global" });
+      // const { error } = await supabase.auth.signOut({ scope: "global" });
       if (error) throw error;
 
       // Reset state
@@ -205,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    return;
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

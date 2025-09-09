@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Dialog,
@@ -9,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Clock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 interface OrderDetailsDialogProps {
   open: boolean;
@@ -22,7 +21,7 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   onOpenChange,
   order,
 }) => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   if (!order) return null;
 
@@ -69,14 +68,18 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <h3 className="text-sm font-medium mb-3">Order Items</h3>
             <div className="border rounded-md divide-y">
               {order.items.map((item: any, index: number) => (
-                <div key={index} className="flex justify-between items-center p-3">
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-3"
+                >
                   <div>
-                    <span className="font-medium">{item.quantity}x</span> {item.name}
+                    <span className="font-medium">{item.quantity}x</span>{" "}
+                    {item.name}
                   </div>
                   <span>${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
-              
+
               {/* Order Summary */}
               <div className="space-y-2 p-3 bg-muted/50">
                 <div className="flex justify-between text-sm">
@@ -145,7 +148,9 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <div className="flex items-center text-sm">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                 <span className="text-muted-foreground">
-                  {new Date(Date.parse(order.date) + 5 * 60000).toLocaleTimeString([], {
+                  {new Date(
+                    Date.parse(order.date) + 5 * 60000,
+                  ).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -157,7 +162,9 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   <div className="flex items-center text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                     <span className="text-muted-foreground">
-                      {new Date(Date.parse(order.date) + 15 * 60000).toLocaleTimeString([], {
+                      {new Date(
+                        Date.parse(order.date) + 15 * 60000,
+                      ).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -167,7 +174,9 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   <div className="flex items-center text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                     <span className="text-muted-foreground">
-                      {new Date(Date.parse(order.date) + 25 * 60000).toLocaleTimeString([], {
+                      {new Date(
+                        Date.parse(order.date) + 25 * 60000,
+                      ).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -177,7 +186,9 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   <div className="flex items-center text-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
                     <span className="text-muted-foreground">
-                      {new Date(Date.parse(order.date) + 45 * 60000).toLocaleTimeString([], {
+                      {new Date(
+                        Date.parse(order.date) + 45 * 60000,
+                      ).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -195,7 +206,7 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <Button
                 onClick={() => {
                   onOpenChange(false);
-                  navigate("/menu");
+                  navigate.push("/menu");
                 }}
                 className="flex-1"
               >
@@ -207,7 +218,7 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <Button
                 onClick={() => {
                   onOpenChange(false);
-                  navigate(`/track/${order.id}`);
+                  navigate.push(`/track/${order.id}`);
                 }}
                 className="flex-1"
               >
