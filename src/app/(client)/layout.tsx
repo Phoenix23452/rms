@@ -14,7 +14,7 @@ export default async function ClientLayout({
   console.log("Device detection", ua);
   const isMobile = isMobileDevice(ua);
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col overflow-hidden  bg-background">
       {/* Header - Fixed on mobile for app-like experience */}
       <div
         className={cn(

@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ViewToggle } from "@/components/customer/menu/ViewToggle";
-import { useNavigate } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface MenuControlsProps {
   cartCount: number;
@@ -11,13 +10,17 @@ interface MenuControlsProps {
   setIsGridView: (isGrid: boolean) => void;
 }
 
-export const MenuControls = ({ cartCount, isGridView, setIsGridView }: MenuControlsProps) => {
-  const navigate = useNavigate();
+export const MenuControls = ({
+  cartCount,
+  isGridView,
+  setIsGridView,
+}: MenuControlsProps) => {
+  const navigate = useRouter();
 
   return (
-    <Button 
+    <Button
       variant="outline"
-      onClick={() => navigate('/cart')}
+      onClick={() => navigate.push("/cart")}
       className="relative w-full flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/80 border-none"
     >
       <ShoppingCart className="h-5 w-5" />

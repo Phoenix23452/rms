@@ -56,7 +56,7 @@ const PopularItemsSection: React.FC = () => {
         {popularItems.map((item) => (
           <Card
             key={item.id}
-            className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-shadow"
+            className="overflow-hidden py-0  border-none shadow-lg hover:shadow-xl transition-shadow"
           >
             <div className="relative">
               <img

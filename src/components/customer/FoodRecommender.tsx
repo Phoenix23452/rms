@@ -1,17 +1,38 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronUp, ChefHat, User, Users, Star, Coffee } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ChefHat,
+  User,
+  Users,
+  Star,
+  Coffee,
+} from "lucide-react";
 import { Collapse } from "@/components/ui/collapse";
-import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
-type Preference = "spicy" | "sweet" | "savory" | "healthy" | "comfort" | "vegetarian";
+type Preference =
+  | "spicy"
+  | "sweet"
+  | "savory"
+  | "healthy"
+  | "comfort"
+  | "vegetarian";
 type Occasion = "casual" | "celebration" | "date" | "business";
 
 type RecommendedItem = {
@@ -30,62 +51,67 @@ const recommendedItems: RecommendedItem[] = [
   {
     id: 1,
     name: "House Special Platter",
-    description: "A selection of our signature appetizers, perfect for sharing with 2-4 people",
+    description:
+      "A selection of our signature appetizers, perfect for sharing with 2-4 people",
     price: 24.99,
     image: "https://placehold.co/300x200/FFD700/333?text=Platter",
     rating: 4.9,
     serving: "sharing",
     preferences: ["savory", "comfort"],
-    category: "Appetizers"
+    category: "Appetizers",
   },
   {
     id: 2,
     name: "Grilled Salmon with Roasted Vegetables",
-    description: "Fresh salmon fillet with seasonal vegetables in a lemon butter sauce",
+    description:
+      "Fresh salmon fillet with seasonal vegetables in a lemon butter sauce",
     price: 18.99,
     image: "https://placehold.co/300x200/90EE90/333?text=Salmon",
     rating: 4.8,
     serving: "individual",
     preferences: ["healthy", "savory"],
-    category: "Mains"
+    category: "Mains",
   },
   {
     id: 3,
     name: "Vegetable Paella",
-    description: "Traditional Spanish rice dish with seasonal vegetables and aromatic spices",
+    description:
+      "Traditional Spanish rice dish with seasonal vegetables and aromatic spices",
     price: 16.99,
     image: "https://placehold.co/300x200/FFD700/333?text=Paella",
     rating: 4.7,
     serving: "sharing",
     preferences: ["vegetarian", "savory"],
-    category: "Mains"
+    category: "Mains",
   },
   {
     id: 4,
     name: "Tiramisu",
-    description: "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone cream",
+    description:
+      "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone cream",
     price: 7.99,
     image: "https://placehold.co/300x200/8B4513/FFF?text=Tiramisu",
     rating: 4.9,
     serving: "individual",
     preferences: ["sweet"],
-    category: "Desserts"
-  }
+    category: "Desserts",
+  },
 ];
 
 const FoodRecommender: React.FC = () => {
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [peopleCount, setPeopleCount] = useState("2");
   const [occasion, setOccasion] = useState<Occasion>("casual");
   const [preferences, setPreferences] = useState<Preference[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
+  const navigate = useRouter();
+
   const handlePreferenceChange = (preference: Preference, checked: boolean) => {
     if (checked) {
       setPreferences([...preferences, preference]);
     } else {
-      setPreferences(preferences.filter(p => p !== preference));
+      setPreferences(preferences.filter((p) => p !== preference));
     }
   };
 
@@ -95,37 +121,43 @@ const FoodRecommender: React.FC = () => {
   };
 
   const handleAddToCart = (item: RecommendedItem) => {
-    navigate("/menu");
+    navigate.push("/menu");
     // In a real app, this would add the item to the cart
   };
 
-  const filteredRecommendations = submitted 
-    ? recommendedItems.filter(item => {
+  const filteredRecommendations = submitted
+    ? recommendedItems.filter((item) => {
         if (parseInt(peopleCount) > 2 && item.serving === "individual") {
           return false;
         }
-        
+
         if (preferences.length > 0) {
-          return preferences.some(pref => item.preferences.includes(pref));
+          return preferences.some((pref) => item.preferences.includes(pref));
         }
-        
+
         return true;
       })
     : [];
 
   return (
     <Card className="border-primary/20 shadow-sm overflow-hidden">
-      <CardHeader 
+      <CardHeader
         className="bg-gradient-to-r from-amber-50/60 to-amber-100/60 dark:from-amber-900/20 dark:to-amber-800/20 cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ChefHat className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">Personal Menu Recommendations</CardTitle>
+            <CardTitle className="text-lg">
+              Personal Menu Recommendations
+            </CardTitle>
           </div>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
           </Button>
         </div>
         <CardDescription>
@@ -141,20 +173,44 @@ const FoodRecommender: React.FC = () => {
                 <Label htmlFor="peopleCount">How many people are dining?</Label>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <RadioGroupItem id="people-1" value="1" checked={peopleCount === "1"} onClick={() => setPeopleCount("1")} />
-                    <Label htmlFor="people-1" className="flex items-center gap-1">
+                    <RadioGroupItem
+                      id="people-1"
+                      value="1"
+                      checked={peopleCount === "1"}
+                      onClick={() => setPeopleCount("1")}
+                    />
+                    <Label
+                      htmlFor="people-1"
+                      className="flex items-center gap-1"
+                    >
                       <User className="h-4 w-4" /> Just me
                     </Label>
                   </div>
                   <div className="flex items-center gap-2">
-                    <RadioGroupItem id="people-2" value="2" checked={peopleCount === "2"} onClick={() => setPeopleCount("2")} />
-                    <Label htmlFor="people-2" className="flex items-center gap-1">
+                    <RadioGroupItem
+                      id="people-2"
+                      value="2"
+                      checked={peopleCount === "2"}
+                      onClick={() => setPeopleCount("2")}
+                    />
+                    <Label
+                      htmlFor="people-2"
+                      className="flex items-center gap-1"
+                    >
                       <User className="h-4 w-4" /> Couple
                     </Label>
                   </div>
                   <div className="flex items-center gap-2">
-                    <RadioGroupItem id="people-group" value="4" checked={peopleCount === "4"} onClick={() => setPeopleCount("4")} />
-                    <Label htmlFor="people-group" className="flex items-center gap-1">
+                    <RadioGroupItem
+                      id="people-group"
+                      value="4"
+                      checked={peopleCount === "4"}
+                      onClick={() => setPeopleCount("4")}
+                    />
+                    <Label
+                      htmlFor="people-group"
+                      className="flex items-center gap-1"
+                    >
                       <Users className="h-4 w-4" /> Group
                     </Label>
                   </div>
@@ -165,10 +221,18 @@ const FoodRecommender: React.FC = () => {
 
               <div className="space-y-2">
                 <Label>What's the occasion?</Label>
-                <RadioGroup value={occasion} onValueChange={(value) => setOccasion(value as Occasion)} className="flex flex-wrap gap-2">
+                <RadioGroup
+                  value={occasion}
+                  onValueChange={(value) => setOccasion(value as Occasion)}
+                  className="flex flex-wrap gap-2"
+                >
                   <div className="flex items-center">
-                    <RadioGroupItem value="casual" id="casual" className="peer sr-only" />
-                    <Label 
+                    <RadioGroupItem
+                      value="casual"
+                      id="casual"
+                      className="peer sr-only"
+                    />
+                    <Label
                       htmlFor="casual"
                       className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                     >
@@ -176,8 +240,12 @@ const FoodRecommender: React.FC = () => {
                     </Label>
                   </div>
                   <div className="flex items-center">
-                    <RadioGroupItem value="celebration" id="celebration" className="peer sr-only" />
-                    <Label 
+                    <RadioGroupItem
+                      value="celebration"
+                      id="celebration"
+                      className="peer sr-only"
+                    />
+                    <Label
                       htmlFor="celebration"
                       className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                     >
@@ -185,8 +253,12 @@ const FoodRecommender: React.FC = () => {
                     </Label>
                   </div>
                   <div className="flex items-center">
-                    <RadioGroupItem value="date" id="date" className="peer sr-only" />
-                    <Label 
+                    <RadioGroupItem
+                      value="date"
+                      id="date"
+                      className="peer sr-only"
+                    />
+                    <Label
                       htmlFor="date"
                       className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                     >
@@ -194,8 +266,12 @@ const FoodRecommender: React.FC = () => {
                     </Label>
                   </div>
                   <div className="flex items-center">
-                    <RadioGroupItem value="business" id="business" className="peer sr-only" />
-                    <Label 
+                    <RadioGroupItem
+                      value="business"
+                      id="business"
+                      className="peer sr-only"
+                    />
+                    <Label
                       htmlFor="business"
                       className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
                     >
@@ -211,50 +287,62 @@ const FoodRecommender: React.FC = () => {
                 <Label>Flavor preferences (optional)</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="pref-spicy" 
+                    <Checkbox
+                      id="pref-spicy"
                       checked={preferences.includes("spicy")}
-                      onCheckedChange={(checked) => handlePreferenceChange("spicy", !!checked)} 
+                      onCheckedChange={(checked) =>
+                        handlePreferenceChange("spicy", !!checked)
+                      }
                     />
                     <Label htmlFor="pref-spicy">Spicy</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="pref-sweet" 
+                    <Checkbox
+                      id="pref-sweet"
                       checked={preferences.includes("sweet")}
-                      onCheckedChange={(checked) => handlePreferenceChange("sweet", !!checked)} 
+                      onCheckedChange={(checked) =>
+                        handlePreferenceChange("sweet", !!checked)
+                      }
                     />
                     <Label htmlFor="pref-sweet">Sweet</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="pref-savory" 
+                    <Checkbox
+                      id="pref-savory"
                       checked={preferences.includes("savory")}
-                      onCheckedChange={(checked) => handlePreferenceChange("savory", !!checked)} 
+                      onCheckedChange={(checked) =>
+                        handlePreferenceChange("savory", !!checked)
+                      }
                     />
                     <Label htmlFor="pref-savory">Savory</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="pref-healthy" 
+                    <Checkbox
+                      id="pref-healthy"
                       checked={preferences.includes("healthy")}
-                      onCheckedChange={(checked) => handlePreferenceChange("healthy", !!checked)} 
+                      onCheckedChange={(checked) =>
+                        handlePreferenceChange("healthy", !!checked)
+                      }
                     />
                     <Label htmlFor="pref-healthy">Healthy</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="pref-comfort" 
+                    <Checkbox
+                      id="pref-comfort"
                       checked={preferences.includes("comfort")}
-                      onCheckedChange={(checked) => handlePreferenceChange("comfort", !!checked)} 
+                      onCheckedChange={(checked) =>
+                        handlePreferenceChange("comfort", !!checked)
+                      }
                     />
                     <Label htmlFor="pref-comfort">Comfort Food</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="pref-vegetarian" 
+                    <Checkbox
+                      id="pref-vegetarian"
                       checked={preferences.includes("vegetarian")}
-                      onCheckedChange={(checked) => handlePreferenceChange("vegetarian", !!checked)} 
+                      onCheckedChange={(checked) =>
+                        handlePreferenceChange("vegetarian", !!checked)
+                      }
                     />
                     <Label htmlFor="pref-vegetarian">Vegetarian</Label>
                   </div>
@@ -262,35 +350,48 @@ const FoodRecommender: React.FC = () => {
               </div>
 
               <div className="pt-2">
-                <Button type="submit" className="w-full">Get Recommendations</Button>
+                <Button type="submit" className="w-full">
+                  Get Recommendations
+                </Button>
               </div>
             </form>
           ) : (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-medium text-lg">Our Recommendations</h3>
-                <Button variant="outline" size="sm" onClick={() => setSubmitted(false)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubmitted(false)}
+                >
                   Change Preferences
                 </Button>
               </div>
-              
+
               {filteredRecommendations.length > 0 ? (
                 <div className="space-y-4">
                   {filteredRecommendations.map((item) => (
-                    <div key={item.id} className="flex gap-4 border-b pb-4 last:border-0">
+                    <div
+                      key={item.id}
+                      className="flex gap-4 border-b pb-4 last:border-0"
+                    >
                       <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                        <img 
-                          src={item.image} 
-                          alt={item.name} 
+                        <img
+                          src={item.image}
+                          alt={item.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1 space-y-1">
                         <div className="flex justify-between items-start">
                           <h4 className="font-medium">{item.name}</h4>
-                          <span className="font-semibold text-primary">${item.price.toFixed(2)}</span>
+                          <span className="font-semibold text-primary">
+                            ${item.price.toFixed(2)}
+                          </span>
                         </div>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
+                        </p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1 text-sm">
                             <div className="flex items-center">
@@ -298,22 +399,27 @@ const FoodRecommender: React.FC = () => {
                               <span className="ml-1">{item.rating}</span>
                             </div>
                             <Badge variant="outline" className="text-xs ml-2">
-                              {item.serving === "sharing" ? "Great for sharing" : "Individual"}
+                              {item.serving === "sharing"
+                                ? "Great for sharing"
+                                : "Individual"}
                             </Badge>
                           </div>
-                          <Button size="sm" onClick={() => handleAddToCart(item)}>
+                          <Button
+                            size="sm"
+                            onClick={() => handleAddToCart(item)}
+                          >
                             View Item
                           </Button>
                         </div>
                       </div>
                     </div>
                   ))}
-                  
+
                   <div className="pt-2">
-                    <Button 
-                      className="w-full" 
-                      variant="outline" 
-                      onClick={() => navigate('/menu')}
+                    <Button
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => navigate("/menu")}
                     >
                       View Full Menu
                     </Button>

@@ -69,7 +69,7 @@ const SpecialDealsSection: React.FC = () => {
         {specialDeals.map((deal) => (
           <Card
             key={deal.id}
-            className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-shadow"
+            className="overflow-hidden py-0 border-none shadow-lg hover:shadow-xl transition-shadow"
           >
             <div className="relative">
               <img

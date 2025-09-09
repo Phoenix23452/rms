@@ -75,12 +75,12 @@ const CategoriesSection: React.FC = () => {
           {categories.map((category) => (
             <Card
               key={category.id}
-              className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+              className="overflow-hidden py-0 border-none shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
               onClick={() =>
                 navigate.push(`/menu?category=${category.name.toLowerCase()}`)
               }
             >
-              <div className="aspect-square relative">
+              <div className="aspect-square h-fit relative">
                 <img
                   src={category.image}
                   alt={category.name}
