@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,19 +25,19 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     // Initialize Mapbox map
     const initializeMap = async () => {
       try {
-        const mapboxgl = await import('mapbox-gl');
-        await import('mapbox-gl/dist/mapbox-gl.css');
-        
+        const mapboxgl = await import("mapbox-gl");
+        await import("mapbox-gl/dist/mapbox-gl.css");
+
         mapboxgl.default.accessToken = mapboxToken;
-        
+
         const mapInstance = new mapboxgl.default.Map({
           container: mapRef.current!,
-          style: 'mapbox://styles/mapbox/streets-v12',
+          style: "mapbox://styles/mapbox/streets-v12",
           center: [67.0011, 24.8607], // Karachi coordinates
           zoom: 12,
         });
 
-        mapInstance.on('click', (e) => {
+        mapInstance.on("click", (e) => {
           const { lng, lat } = e.lngLat;
           addMarker(lat, lng);
           onLocationSelect(lat, lng);
@@ -49,14 +48,13 @@ export const AddressMap: React.FC<AddressMapProps> = ({
 
         // Add marker if location is already selected
         if (selectedLocation) {
-          mapInstance.on('load', () => {
+          mapInstance.on("load", () => {
             addMarker(selectedLocation.lat, selectedLocation.lng);
             mapInstance.setCenter([selectedLocation.lng, selectedLocation.lat]);
           });
         }
-
       } catch (error) {
-        console.error('Error loading Mapbox:', error);
+        console.error("Error loading Mapbox:", error);
       }
     };
 
@@ -78,8 +76,8 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     }
 
     // Add new marker
-    const mapboxgl = require('mapbox-gl');
-    const newMarker = new mapboxgl.Marker({ color: '#ef4444' })
+    const mapboxgl = require("mapbox-gl");
+    const newMarker = new mapboxgl.Marker({ color: "#ef4444" })
       .setLngLat([lng, lat])
       .addTo(map);
 
@@ -92,15 +90,15 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     try {
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          searchQuery
-        )}.json?access_token=${mapboxToken}&country=PK&limit=1`
+          searchQuery,
+        )}.json?access_token=${mapboxToken}&country=PK&limit=1`,
       );
       const data = await response.json();
 
       if (data.features && data.features.length > 0) {
         const [lng, lat] = data.features[0].center;
         const address = data.features[0].place_name;
-        
+
         if (map) {
           map.setCenter([lng, lat]);
           map.setZoom(15);
@@ -109,7 +107,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
         }
       }
     } catch (error) {
-      console.error('Error searching location:', error);
+      console.error("Error searching location:", error);
     }
   };
 
@@ -122,9 +120,9 @@ export const AddressMap: React.FC<AddressMapProps> = ({
           Enter your Mapbox public token to enable map functionality.
           <br />
           Get your token from{" "}
-          <a 
-            href="https://mapbox.com/" 
-            target="_blank" 
+          <a
+            href="https://mapbox.com/"
+            target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline"
           >
@@ -138,8 +136,8 @@ export const AddressMap: React.FC<AddressMapProps> = ({
             value={mapboxToken}
             onChange={(e) => setMapboxToken(e.target.value)}
           />
-          <Button 
-            onClick={() => setShowTokenInput(false)} 
+          <Button
+            onClick={() => setShowTokenInput(false)}
             disabled={!mapboxToken}
             className="w-full"
           >
@@ -157,7 +155,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
           placeholder="Search for a location..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && searchLocation()}
+          onKeyPress={(e) => e.key === "Enter" && searchLocation()}
           className="bg-white shadow-lg"
         />
         <Button onClick={searchLocation} size="sm" className="shadow-lg">
