@@ -1,11 +1,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const HeroSection: React.FC = () => {
-  const navigate = useRouter();
-
   return (
     <section
       className="relative h-[600px] bg-cover bg-center"
@@ -22,22 +20,24 @@ const HeroSection: React.FC = () => {
             culinary experiences.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Button
-              onClick={() => navigate.push("/menu")}
-              size="lg"
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              Browse Menu
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => navigate.push("/reservation")}
-              className="bg-transparent border-2 border-white text-white hover:bg-white/10"
-            >
-              <Calendar className="mr-2 h-5 w-5" />
-              Reserve a Table
-            </Button>
+            <Link href={"/menu"}>
+              <Button
+                size="lg"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                Browse Menu
+              </Button>
+            </Link>
+            <Link href={"/reservation"}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-transparent border-2 border-white text-white hover:bg-white/10"
+              >
+                <Calendar className="mr-2 h-5 w-5" />
+                Reserve a Table
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

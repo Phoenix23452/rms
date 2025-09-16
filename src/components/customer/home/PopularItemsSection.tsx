@@ -2,8 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ShoppingCart, Plus, Star } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Popular items data
 const popularItems = [
@@ -32,22 +31,25 @@ const popularItems = [
       "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
   },
 ];
+interface PopularItemsSectionProps {
+  isMobile: Boolean;
+}
 
-const PopularItemsSection: React.FC = () => {
-  const navigate = useRouter();
-  const { isMobile } = useIsMobile();
-
+const PopularItemsSection: React.FC<PopularItemsSectionProps> = ({
+  isMobile,
+}) => {
   return (
     <section className="container mx-auto px-4 py-16">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold">Popular Items</h2>
-        <Button
-          variant="link"
-          onClick={() => navigate.push("/menu")}
-          className="text-orange-500 hover:text-orange-600 flex items-center"
-        >
-          View All <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
+        <Link href={"/menu"}>
+          <Button
+            variant="link"
+            className="text-orange-500 hover:text-orange-600 flex items-center"
+          >
+            View All <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </Link>
       </div>
 
       <div

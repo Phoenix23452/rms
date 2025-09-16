@@ -11,7 +11,6 @@ export default async function ClientLayout({
   children: ReactNode;
 }) {
   const ua = (await headers()).get("user-agent");
-  console.log("Device detection", ua);
   const isMobile = isMobileDevice(ua);
   return (
     <div className="h-screen flex flex-col overflow-hidden  bg-background">

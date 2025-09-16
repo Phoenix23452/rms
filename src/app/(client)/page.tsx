@@ -1,37 +1,14 @@
-"use client";
-import React from "react";
-import HeroSection from "@/components/customer/home/HeroSection";
-import CategoriesSection from "@/components/customer/home/CategoriesSection";
-import SpecialDealsSection from "@/components/customer/home/SpecialDealsSection";
-import FeaturesSection from "@/components/customer/home/FeaturesSection";
-import ReservationCTA from "@/components/customer/home/ReservationCTA";
-import PopularItemsSection from "@/components/customer/home/PopularItemsSection";
+// app/Home/page.tsx
+
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getCategories } from "./actions";
+import HomePage from "./HomePage";
 
-export default function Home() {
-  const { isMobile } = useIsMobile();
+export const dynamic = "force-dynamic"; // SSR with auto-updates
 
-  return (
-    <div className="flex flex-col">
-      <HeroSection />
-      <SpecialDealsSection />
-      <CategoriesSection />
-      <PopularItemsSection />
-      <FeaturesSection />
-      <ReservationCTA />
+export default async function Home() {
+  const categories = await getCategories(); // SSR
+  const { isMobile } = await useIsMobile();
 
-      {/* Footer with credit to Wezsol */}
-      <div className="bg-gray-800 text-white py-4 mt-8">
-        <div className="container mx-auto px-4 text-center">
-          <p>
-            &copy; {new Date().getFullYear()} This product is from{" "}
-            <a href="https://wezsol.com" className="text-primary font-bold">
-              wezsol.com
-            </a>
-            . Created by Wezsol.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  return <HomePage isMobile={isMobile} categories={categories} />;
 }
