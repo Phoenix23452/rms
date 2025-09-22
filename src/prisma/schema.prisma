@@ -24,12 +24,12 @@ enum Day {
   Sun
 }
 
-enum MembershipTier {
-  BRONZE
-  SILVER
-  GOLD
-  PLATINUM
-}
+// enum MembershipTier {
+//   BRONZE
+//   SILVER
+//   GOLD
+//   PLATINUM
+// }
 
 enum AddressType {
   HOME
@@ -71,14 +71,18 @@ model Product {
   discountPercentage Float? // Optional: 0 to 100
   isFeatured         Boolean    @default(false)
   isPopular          Boolean    @default(false)
+  isOptional         Boolean    @default(false) // For Optional Products
   status             Boolean    @default(true)
   image              String? // Optional image URL/path
   categoryId         Int
   category           Category   @relation(fields: [categoryId], references: [id])
   variants           Variant[] // Optional relation (can be empty array)
   dealItems          DealItem[] // Optional relation (can be empty array)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  // Many-to-many self-relation (optional items shared between products)
+  optionalItems      Product[]  @relation("OptionalItems")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("products")
 }
@@ -90,7 +94,9 @@ model Variant {
   productId Int
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  orderItems OrderItem[]
+  orderItems         OrderItem[]
+  // Many-to-many relation back to OrderItem (optional items)
+  optionalOrderItems OrderItem[] @relation("OrderItemOptionalItems")
 
   @@map("product_variants")
 }
@@ -133,16 +139,16 @@ model DealItem {
 }
 
 model Customer {
-  id             Int            @id @default(autoincrement())
-  customerCode   String         @unique // e.g., CUST-2451
-  fullName       String
-  email          String         @unique
-  phone          String
-  joinedAt       DateTime       @default(now())
-  membershipTier MembershipTier @default(BRONZE)
-  points         Int            @default(0)
-  about          String? // Optional
-  status         CustomerStatus @default(ACTIVE)
+  id           Int            @id @default(autoincrement())
+  customerCode String         @unique // e.g., CUST-2451
+  fullName     String
+  email        String         @unique
+  phone        String
+  joinedAt     DateTime       @default(now())
+  // membershipTier MembershipTier @default(BRONZE)
+  points       Int            @default(0)
+  about        String? // Optional
+  status       CustomerStatus @default(ACTIVE)
 
   orders    Order[] // Relation to Order
   addresses Address[] // Relation to Address
@@ -175,15 +181,17 @@ model Order {
 }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId   Int
-  variant   Variant? @relation(fields: [variantId], references: [id])
-  variantId Int?
-  quantity  Int
-  unitPrice Float // Store at the time of order
-  price     Float // unitPrice * quantity
-  note      String? // Optional note (e.g., spicy, no onions)
+  id            Int       @id @default(autoincrement())
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId       Int
+  variant       Variant?  @relation(fields: [variantId], references: [id])
+  variantId     Int?
+  quantity      Int
+  unitPrice     Float // Store at the time of order
+  price         Float // unitPrice * quantity
+  note          String? // Optional note (e.g., spicy, no onions)
+  // Many-to-many relation for optional items (variants)
+  optionalItems Variant[] @relation("OrderItemOptionalItems")
 
   @@map("order_items")
 }

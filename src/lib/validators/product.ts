@@ -27,5 +27,7 @@ export const productSchema = z
     isPopular: z.boolean().optional(),
     image: z.string().url("Must be a valid URL").optional(),
     variants: z.array(variantSchema).optional(),
+    // Validate optionalItems as an array of product IDs (optional)
+    optionalItems: z.array(z.number().int().positive()).optional(),
   })
   .strip();

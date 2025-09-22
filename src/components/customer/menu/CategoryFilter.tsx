@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Carousel,
@@ -8,35 +7,51 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 interface CategoryFilterProps {
   categories: Category[];
   activeCategory: string;
   setActiveCategory: (categoryId: string) => void;
 }
 
-export const CategoryFilter = ({ categories, activeCategory, setActiveCategory }: CategoryFilterProps) => {
+export const CategoryFilter = ({
+  categories,
+  activeCategory,
+  setActiveCategory,
+}: CategoryFilterProps) => {
   return (
     <div className="relative">
       <h2 className="font-bold text-lg mb-4 border-b border-primary pb-1 w-fit">
         Categories
       </h2>
-      
-      <Carousel className="w-full">
+
+      <Carousel className="w-full px-9">
         <CarouselContent className="-ml-2">
-          {categories.map((category) => (
+          <CarouselItem key={"all"} className="pl-2 basis-auto">
+            <div
+              onClick={() => setActiveCategory(String("all"))}
+              className={`
+                  px-4 py-2 rounded-md whitespace-nowrap cursor-pointer transition-colors
+                  ${
+                    activeCategory === "all"
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }
+                `}
+            >
+              {"All"}
+            </div>
+          </CarouselItem>
+          {categories?.map((category) => (
             <CarouselItem key={category.id} className="pl-2 basis-auto">
-              <div 
-                onClick={() => setActiveCategory(category.id)}
+              <div
+                onClick={() => setActiveCategory(String(category.id))}
                 className={`
                   px-4 py-2 rounded-md whitespace-nowrap cursor-pointer transition-colors
-                  ${activeCategory === category.id ? 
-                    'bg-primary text-white' : 
-                    'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                  ${
+                    activeCategory === String(category.id)
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }
                 `}
               >
                 {category.name}

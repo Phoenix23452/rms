@@ -7,7 +7,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-  AlertDialog
+  AlertDialog,
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ import { PriceSummary } from "./PriceSummary";
 interface OrderDialogProps {
   selectedItem: any;
   quantity: number;
-  loyaltyPoints: any;
   decreaseQuantity: () => void;
   increaseQuantity: () => void;
   handleConfirmOrder: () => void;
@@ -32,71 +31,87 @@ interface OrderDialogProps {
 export const OrderDialog = ({
   selectedItem,
   quantity,
-  loyaltyPoints,
   decreaseQuantity,
   increaseQuantity,
   handleConfirmOrder,
   productVariations,
   optionalItems,
 }: OrderDialogProps) => {
-  const [selectedVariation, setSelectedVariation] = useState(productVariations[0]?.id || 0);
-  const [selectedOptionals, setSelectedOptionals] = useState<{[key: number]: number | null}>({});
-  
+  const [selectedVariation, setSelectedVariation] = useState(
+    productVariations[0]?.id || 0,
+  );
+  const [selectedOptionals, setSelectedOptionals] = useState<{
+    [key: number]: number | null;
+  }>({});
+
   if (!selectedItem) return null;
-  
+
   const calculateTotalPrice = () => {
     // Get base price from selected variation
-    const variation = productVariations.find(v => v.id === selectedVariation);
+    const variation = productVariations.find((v) => v.id === selectedVariation);
     let total = (variation?.price || selectedItem.price) * quantity;
-    
+
     // Add optional items
     Object.entries(selectedOptionals).forEach(([itemId, variationId]) => {
       if (variationId !== null) {
-        const optionalItem = optionalItems.find(o => o.id === parseInt(itemId));
+        const optionalItem = optionalItems.find(
+          (o) => o.id === parseInt(itemId),
+        );
         if (optionalItem) {
-          const optVariation = optionalItem.variations.find(v => v.id === variationId);
+          const optVariation = optionalItem.variations.find(
+            (v: any) => v.id === variationId,
+          );
           if (optVariation) {
             total += optVariation.price;
           }
         }
       }
     });
-    
+
     return total;
   };
-  
+
   const handleOptionalItemToggle = (itemId: number, checked: boolean) => {
-    setSelectedOptionals(prev => ({
+    setSelectedOptionals((prev) => ({
       ...prev,
-      [itemId]: checked ? optionalItems.find(o => o.id === itemId)?.variations[0]?.id || null : null
+      [itemId]: checked
+        ? optionalItems.find((o) => o.id === itemId)?.variations[0]?.id || null
+        : null,
     }));
   };
-  
-  const handleOptionalVariationChange = (itemId: number, variationId: number) => {
-    setSelectedOptionals(prev => ({
+
+  const handleOptionalVariationChange = (
+    itemId: number,
+    variationId: number,
+  ) => {
+    setSelectedOptionals((prev) => ({
       ...prev,
-      [itemId]: variationId
+      [itemId]: variationId,
     }));
   };
-  
+
   const getOrderSummary = () => {
     // Build an order summary object to pass to the confirmation handler
-    const variation = productVariations.find(v => v.id === selectedVariation);
-    
+    const variation = productVariations.find((v) => v.id === selectedVariation);
+
     const optionals = Object.entries(selectedOptionals)
       .filter(([_, variationId]) => variationId !== null)
       .map(([itemId, variationId]) => {
-        const optionalItem = optionalItems.find(o => o.id === parseInt(itemId));
-        const optVariation = optionalItem?.variations.find(v => v.id === variationId);
+        const optionalItem = optionalItems.find(
+          (o) => o.id === parseInt(itemId),
+        );
+        const optVariation = optionalItem?.variations.find(
+          (v: any) => v.id === variationId,
+        );
         return {
           itemId: parseInt(itemId),
           itemName: optionalItem?.name,
           variationId: variationId,
           variationName: optVariation?.name,
-          price: optVariation?.price || 0
+          price: optVariation?.price || 0,
         };
       });
-    
+
     return {
       itemId: selectedItem.id,
       itemName: selectedItem.name,
@@ -105,10 +120,10 @@ export const OrderDialog = ({
       basePrice: variation?.price || selectedItem.price,
       quantity,
       optionals,
-      totalPrice: calculateTotalPrice()
+      totalPrice: calculateTotalPrice(),
     };
   };
-  
+
   const handleConfirm = () => {
     const orderSummary = getOrderSummary();
     console.log("Order summary:", orderSummary);
@@ -117,8 +132,10 @@ export const OrderDialog = ({
   };
 
   // Get the selected variation's price
-  const selectedVariationPrice = productVariations.find(v => v.id === selectedVariation)?.price || selectedItem.price;
-  
+  const selectedVariationPrice =
+    productVariations.find((v) => v.id === selectedVariation)?.price ||
+    selectedItem.price;
+
   return (
     <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
       <AlertDialogHeader>
@@ -127,51 +144,51 @@ export const OrderDialog = ({
           Customize your order for {selectedItem?.name}.
         </AlertDialogDescription>
       </AlertDialogHeader>
-      
+
       <div className="py-4">
         {/* Product image */}
         <ProductImage image={selectedItem.image} name={selectedItem.name} />
-        
+
         {/* Product variations */}
-        <ProductVariations 
-          variations={productVariations} 
-          selectedVariation={selectedVariation} 
-          onVariationChange={setSelectedVariation} 
+        <ProductVariations
+          variations={productVariations}
+          selectedVariation={selectedVariation}
+          onVariationChange={setSelectedVariation}
         />
-        
+
         <Separator className="my-4" />
-        
+
         {/* Quantity selector */}
-        <QuantitySelector 
-          quantity={quantity} 
-          decreaseQuantity={decreaseQuantity} 
-          increaseQuantity={increaseQuantity} 
+        <QuantitySelector
+          quantity={quantity}
+          decreaseQuantity={decreaseQuantity}
+          increaseQuantity={increaseQuantity}
         />
-        
+
         <Separator className="my-4" />
-        
+
         {/* Optional items */}
-        <OptionalItems 
-          items={optionalItems} 
-          selectedOptionals={selectedOptionals} 
-          onOptionalItemToggle={handleOptionalItemToggle} 
-          onOptionalVariationChange={handleOptionalVariationChange} 
+        <OptionalItems
+          items={optionalItems}
+          selectedOptionals={selectedOptionals}
+          onOptionalItemToggle={handleOptionalItemToggle}
+          onOptionalVariationChange={handleOptionalVariationChange}
         />
-        
+
         <Separator className="my-4" />
-        
+
         {/* Price summary */}
-        <PriceSummary 
-          basePrice={selectedItem.price} 
-          quantity={quantity} 
-          selectedOptionals={selectedOptionals} 
-          optionalItems={optionalItems} 
-          selectedVariationPrice={selectedVariationPrice} 
+        <PriceSummary
+          basePrice={selectedItem.price}
+          quantity={quantity}
+          selectedOptionals={selectedOptionals}
+          optionalItems={optionalItems}
+          selectedVariationPrice={selectedVariationPrice}
           totalPrice={calculateTotalPrice()}
-          loyaltyPoints={loyaltyPoints} 
+          // loyaltyPoints={loyaltyPoints}
         />
       </div>
-      
+
       <AlertDialogFooter>
         <AlertDialogCancel>Cancel</AlertDialogCancel>
         <AlertDialogAction onClick={handleConfirm}>

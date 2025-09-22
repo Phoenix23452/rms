@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
@@ -11,59 +11,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 
-// Categories data
-const categoriesss = [
-  {
-    id: 1,
-    name: "Burgers",
-    description: "Delicious handcrafted burgers",
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    name: "Pizza",
-    description: "Fresh oven-baked pizzas",
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    name: "Pasta",
-    description: "Authentic Italian pasta",
-    image:
-      "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    name: "Salads",
-    description: "Fresh and healthy salads",
-    image:
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 5,
-    name: "Desserts",
-    description: "Sweet treats and desserts",
-    image:
-      "https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 6,
-    name: "Drinks",
-    description: "Refreshing beverages",
-    image:
-      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-];
-
-const CategoriesSection = ({
-  isMobile,
-  categories,
-}: {
-  isMobile: boolean;
-  categories: Category[];
-}) => {
+const CategoriesSection = ({ categories }: { categories: Category[] }) => {
   // const { isMobile }: { isMobile: Boolean } = useIsMobile();
 
   return (
@@ -89,12 +37,12 @@ const CategoriesSection = ({
         >
           <CarouselContent>
             {categories?.map((category) => (
-              <CarouselItem className="lg:basis-1/6 md:basis-1/4 basis-1/3">
+              <CarouselItem
+                className="lg:basis-1/6 md:basis-1/4 basis-1/3"
+                key={category.id}
+              >
                 <Link href={`/menu?category=${category.name.toLowerCase()}`}>
-                  <Card
-                    key={category.id}
-                    className="overflow-hidden py-0 border-none shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
-                  >
+                  <Card className="overflow-hidden py-0 border-none shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
                     <div className="aspect-square h-fit relative">
                       <img
                         src={

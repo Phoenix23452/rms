@@ -10,16 +10,18 @@ import PopularItemsSection from "@/components/customer/home/PopularItemsSection"
 export default function HomePage({
   categories,
   isMobile,
+  popularProducts,
 }: {
-  categories: Category[];
   isMobile: boolean;
+  categories: Category[];
+  popularProducts: Product[];
 }) {
   return (
     <div className="flex flex-col">
       <HeroSection />
       <SpecialDealsSection />
-      <CategoriesSection isMobile={isMobile} categories={categories} />
-      <PopularItemsSection isMobile={isMobile} />
+      <CategoriesSection categories={categories} />
+      <PopularItemsSection isMobile={isMobile} popularItems={popularProducts} />
       <FeaturesSection isMobile={isMobile} />
       <ReservationCTA />
 

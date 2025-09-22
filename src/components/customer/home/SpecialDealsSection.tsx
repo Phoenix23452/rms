@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Clock } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Special deals data
 const specialDeals = [
@@ -47,25 +46,21 @@ const specialDeals = [
 ];
 
 const SpecialDealsSection: React.FC = () => {
-  const navigate = useRouter();
-  const { isMobile } = useIsMobile();
-
   return (
     <section className="container mx-auto px-4 py-16">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold">Special Deals</h2>
-        <Button
-          variant="link"
-          onClick={() => navigate.push("/menu")}
-          className="text-orange-500 hover:text-orange-600 flex items-center"
-        >
-          View All <ArrowRight className="ml-1 h-4 w-4" />
-        </Button>
+        <Link href={"/menu"}>
+          <Button
+            variant="link"
+            className="text-orange-500 hover:text-orange-600 flex items-center"
+          >
+            View All <ArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </Link>
       </div>
 
-      <div
-        className={`grid ${isMobile ? "grid-cols-1 gap-4" : "grid-cols-3 gap-8"}`}
-      >
+      <div className={`grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-8`}>
         {specialDeals.map((deal) => (
           <Card
             key={deal.id}
@@ -101,9 +96,9 @@ const SpecialDealsSection: React.FC = () => {
                     ${deal.originalPrice.toFixed(2)}
                   </span>
                 </div>
-                <Button onClick={() => navigate.push("/menu")}>
-                  Order Now
-                </Button>
+                <Link href={"/menu"}>
+                  <Button>Order Now</Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

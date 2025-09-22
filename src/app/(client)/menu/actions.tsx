@@ -1,8 +1,6 @@
-// app/home/actions.ts
+// app/menu/actions.ts
 "use server";
-
 import config from "@/lib/config";
-
 const API_BASE = config.env.apiEndpoint || "http://localhost:3000";
 
 export async function getCategories() {

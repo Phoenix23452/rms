@@ -7,13 +7,17 @@ export default class ProductRepository extends BaseRepository<Product> {
     super(prisma.product);
   }
   async create(data: any): Promise<Product> {
-    const { variants, ...productData } = data;
+    const { variants, optionalItems, ...productData } = data;
 
     return this.modelClient.create({
       data: {
         ...productData,
         variants: {
           create: variants ?? [],
+        },
+        optionalItems: {
+          connect:
+            optionalItems?.map((itemId: number) => ({ id: itemId })) ?? [],
         },
       },
       include: {
@@ -23,7 +27,7 @@ export default class ProductRepository extends BaseRepository<Product> {
   }
 
   async update(id: number, data: any): Promise<Product> {
-    const { variants, ...productData } = data;
+    const { variants, optionalItems, ...productData } = data;
 
     return this.modelClient.update({
       where: { id },
@@ -32,6 +36,9 @@ export default class ProductRepository extends BaseRepository<Product> {
         variants: {
           deleteMany: {}, // delete all previous
           create: variants ?? [],
+        },
+        optionalItems: {
+          set: optionalItems?.map((itemId: number) => ({ id: itemId })) ?? [], // This will overwrite the existing optionalItems
         },
       },
       include: {

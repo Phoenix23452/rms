@@ -25,8 +25,16 @@ export function parseQueryParams(params: Record<string, string>) {
   let orderBy: any;
 
   for (const [key, rawValue] of Object.entries(params)) {
-    const value = isNaN(+rawValue) ? rawValue : +rawValue;
-
+    let value: any;
+    if (rawValue === "true") {
+      value = true;
+    } else if (rawValue === "false") {
+      value = false;
+    } else if (!isNaN(+rawValue) && rawValue.trim() !== "") {
+      value = +rawValue;
+    } else {
+      value = rawValue;
+    }
     if (key === "include") {
       rawValue.split(",").forEach((field) => {
         setDeepValue(include, field.split("."), true);
