@@ -1,14 +1,10 @@
 "use client";
-
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 // import { useAuth } from "@/contexts/AuthContext"; // disabled for now
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const Header = () => {
-  const navigate = useRouter();
-
   // 🔧 Dummy values for now
   const user = { email: "demo@user.com" };
   const isAuthenticated = false; // change to true to simulate logged-in state
@@ -22,6 +18,7 @@ const Header = () => {
   }, [isAuthenticated, user]);
 
   const getCartCount = () => {
+    if (typeof window === "undefined") return 0; // ✅ SSR safety
     const cart = localStorage?.getItem("cart");
     if (!cart) return 0;
 
@@ -83,45 +80,41 @@ const Header = () => {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => navigate.push("/cart")}
-            className="relative"
-          >
-            Cart
-            {getCartCount() > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {getCartCount()}
-              </span>
-            )}
-          </Button>
+          <Link href={"/cart"}>
+            <Button size="sm" variant="outline" className="relative">
+              Cart
+              {getCartCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {getCartCount()}
+                </span>
+              )}
+            </Button>
+          </Link>
 
           {isAuthenticated ? (
             <>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate.push("/orders")}
-                className="hidden md:inline-flex"
-              >
-                My Orders
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate.push("/profile")}
-              >
-                Profile ({user?.email?.split("@")[0]})
-              </Button>
+              <Link href={"/orders"}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="hidden md:inline-flex"
+                >
+                  My Orders
+                </Button>
+              </Link>
+              <Link href={"/profile"}>
+                <Button size="sm" variant="ghost">
+                  Profile ({user?.email?.split("@")[0]})
+                </Button>
+              </Link>
               <Button size="sm" variant="destructive" onClick={handleLogout}>
                 Logout
               </Button>
             </>
           ) : (
-            <Button size="sm" onClick={() => navigate.push("/auth/login")}>
-              Login
-            </Button>
+            <Link href={"/login"}>
+              <Button size="sm">Login</Button>
+            </Link>
           )}
         </div>
       </div>

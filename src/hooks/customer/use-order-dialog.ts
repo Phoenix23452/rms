@@ -2,10 +2,29 @@
 import { useState } from "react";
 
 export const useOrderDialog = (navigate: any, toast: any) => {
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [selectedOptionals, setSelectedOptionals] = useState({});
+
+  const getCart = () => {
+    if (typeof window === "undefined") return []; // SSR safety
+    try {
+      const existingCart = localStorage.getItem("cart");
+      if (existingCart) {
+        const parsed = JSON.parse(existingCart);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (e) {
+      console.error("Failed to parse cart from localStorage:", e);
+    }
+    return [];
+  };
+
+  const saveCart = (cart: any[]) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("cart", JSON.stringify(cart));
+  };
 
   const handleOrderNow = (item: any) => {
     setSelectedItem(item);
@@ -16,19 +35,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
 
   const handleConfirmOrder = () => {
     // Get current cart from localStorage
-    let cart = [];
-    const existingCart = localStorage.getItem("cart");
-
-    if (existingCart) {
-      try {
-        cart = JSON.parse(existingCart);
-        if (!Array.isArray(cart)) {
-          cart = []; // Reset if not an array
-        }
-      } catch (e) {
-        cart = []; // Reset on parse error
-      }
-    }
+    const cart = getCart();
 
     // Create the new order item with all selected options
     const orderItem = {
@@ -46,7 +53,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     cart.push(orderItem);
 
     // Save back to localStorage
-    localStorage.setItem("cart", JSON.stringify(cart));
+    saveCart(cart);
 
     toast({
       description: `Added ${selectedItem.name} to cart`,
@@ -59,21 +66,9 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     window.dispatchEvent(new CustomEvent("cartUpdated"));
   };
 
-  const handleAddToCart = (item) => {
+  const handleAddToCart = (item: any) => {
     // Get current cart from localStorage
-    let cart = [];
-    const existingCart = localStorage.getItem("cart");
-
-    if (existingCart) {
-      try {
-        cart = JSON.parse(existingCart);
-        if (!Array.isArray(cart)) {
-          cart = []; // Reset if not an array
-        }
-      } catch (e) {
-        cart = []; // Reset on parse error
-      }
-    }
+    const cart = getCart();
 
     // Create the new cart item
     const cartItem = {
@@ -86,8 +81,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     cart.push(cartItem);
 
     // Save back to localStorage
-    localStorage.setItem("cart", JSON.stringify(cart));
-
+    saveCart(cart);
     toast({
       description: `Added ${item.name} to cart`,
     });
