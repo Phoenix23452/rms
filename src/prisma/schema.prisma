@@ -80,6 +80,7 @@ model Product {
   dealItems          DealItem[] // Optional relation (can be empty array)
   // Many-to-many self-relation (optional items shared between products)
   optionalItems      Product[]  @relation("OptionalItems")
+  usedInProducts     Product[]  @relation("OptionalItems")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

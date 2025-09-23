@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 
 export const useOrderDialog = (navigate: any, toast: any) => {
@@ -6,7 +7,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [selectedOptionals, setSelectedOptionals] = useState({});
 
-  const handleOrderNow = (item) => {
+  const handleOrderNow = (item: any) => {
     setSelectedItem(item);
     setQuantity(1);
     setSelectedVariation(null);

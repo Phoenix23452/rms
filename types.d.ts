@@ -20,12 +20,15 @@ type Product = {
   discountPercentage?: number | null;
   isFeatured: boolean;
   isPopular: boolean;
+  isOptional: boolean;
   status: boolean;
   image?: string | null;
   categoryId: number;
   category?: Category;
   variants?: Variant[];
   dealItems?: DealItem[];
+  optionalItems?: Product[];
+  usedInProducts?: Product[];
   createdAt: string;
   updatedAt: string;
 };
@@ -36,6 +39,8 @@ type Variant = {
   price: number;
   productId: number;
   product?: Product;
+  orderItems?: OrderItem[];
+  optionalOrderItems?: OrderItem[];
 };
 
 type Deal = {
@@ -77,7 +82,7 @@ type Customer = {
   email: string;
   phone: string;
   joinedAt: string;
-  membershipTier: MembershipTier;
+  // membershipTier: MembershipTier;
   points: number;
   about?: string | null;
   status: CustomerStatus;
@@ -117,6 +122,7 @@ type OrderItem = {
   unitPrice: number;
   price: number;
   note?: string | null;
+  optionalItems?: Variant[];
 };
 
 type OrderTimeline = {
