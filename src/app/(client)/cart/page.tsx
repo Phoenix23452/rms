@@ -8,7 +8,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -20,8 +19,9 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-// import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
+import { toast } from "sonner";
+import { formatCurrency } from "@/lib/utils";
 
 // Promotion codes
 const promotionCodes = [
@@ -35,10 +35,9 @@ const promotionCodes = [
 ];
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState<any>([]);
   const [promoCode, setPromoCode] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState(null);
-  const { toast } = useToast();
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
 
   useEffect(() => {
     // Load cart items from local storage
@@ -68,7 +67,7 @@ const CartPage = () => {
   const subtotal =
     cartItems.length > 0
       ? cartItems.reduce(
-          (total, item) =>
+          (total: any, item: any) =>
             total + (item.totalPrice || item.price * item.quantity),
           0,
         )
@@ -95,11 +94,11 @@ const CartPage = () => {
   const total = subtotal + deliveryFee + tax - discount - shippingDiscount;
 
   // Update item quantity
-  const updateQuantity = (id, newQuantity) => {
+  const updateQuantity = (id: any, newQuantity: any) => {
     if (newQuantity < 1) return;
 
     setCartItems(
-      cartItems?.map((item) => {
+      cartItems?.map((item: any) => {
         if (item.id === id) {
           const unitPrice = item.price;
           return {
@@ -114,11 +113,10 @@ const CartPage = () => {
   };
 
   // Remove item from cart
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
+  const removeItem = (id: any) => {
+    setCartItems(cartItems.filter((item: any) => item.id !== id));
 
-    toast({
-      title: "Item removed",
+    toast.info("Item removed", {
       description: "Item has been removed from your cart.",
     });
   };
@@ -177,7 +175,7 @@ const CartPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {cartItems.map((item) => (
+                  {cartItems.map((item: any) => (
                     <div key={item.id} className="flex space-x-4">
                       <img
                         src={item.image || "https://placehold.co/100x100"}
@@ -199,7 +197,7 @@ const CartPage = () => {
                         <div className="flex flex-wrap gap-1">
                           {item.options &&
                             item.options.length > 0 &&
-                            item.options.map((option, idx) => (
+                            item.options.map((option: any, idx: any) => (
                               <Badge variant="secondary" key={idx}>
                                 {option}
                               </Badge>
@@ -247,10 +245,12 @@ const CartPage = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={() => navigate("/menu")}>
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Continue Shopping
-                </Button>
+                <Link href={"/menu"}>
+                  <Button variant="outline">
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Continue Shopping
+                  </Button>
+                </Link>
                 <Button variant="outline" onClick={() => setCartItems([])}>
                   Clear Cart
                 </Button>
@@ -344,14 +344,12 @@ const CartPage = () => {
                   )}
                 </div> */}
 
-                <Button
-                  className="w-full mt-6"
-                  size="lg"
-                  onClick={() => navigate("/checkout")}
-                >
-                  Proceed to Checkout
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href={"/checkout"}>
+                  <Button className="w-full mt-6" size="lg">
+                    Proceed to Checkout
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
@@ -365,10 +363,12 @@ const CartPage = () => {
           <p className="text-muted-foreground max-w-sm mt-2">
             Looks like you haven't added any items to your cart yet.
           </p>
-          <Button className="mt-6" onClick={() => navigate("/menu")}>
-            Browse Menu
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
+          <Link href={"/menu"}>
+            <Button className="mt-6">
+              Browse Menu
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       )}
     </div>

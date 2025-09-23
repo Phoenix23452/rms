@@ -19,12 +19,12 @@ import { OptionalItems } from "./OptionalItems";
 import { PriceSummary } from "./PriceSummary";
 
 interface OrderDialogProps {
-  selectedItem: any;
+  selectedItem: Product;
   quantity: number;
   decreaseQuantity: () => void;
   increaseQuantity: () => void;
   handleConfirmOrder: () => void;
-  productVariations: any[];
+  productVariations: Variant[];
   optionalItems: any[];
 }
 
@@ -49,7 +49,7 @@ export const OrderDialog = ({
   const calculateTotalPrice = () => {
     // Get base price from selected variation
     const variation = productVariations.find((v) => v.id === selectedVariation);
-    let total = (variation?.price || selectedItem.price) * quantity;
+    let total = (variation?.price || selectedItem.regularPrice) * quantity;
 
     // Add optional items
     Object.entries(selectedOptionals).forEach(([itemId, variationId]) => {
@@ -117,7 +117,7 @@ export const OrderDialog = ({
       itemName: selectedItem.name,
       variationId: selectedVariation,
       variationName: variation?.name,
-      basePrice: variation?.price || selectedItem.price,
+      basePrice: variation?.price || selectedItem.regularPrice,
       quantity,
       optionals,
       totalPrice: calculateTotalPrice(),
@@ -134,7 +134,7 @@ export const OrderDialog = ({
   // Get the selected variation's price
   const selectedVariationPrice =
     productVariations.find((v) => v.id === selectedVariation)?.price ||
-    selectedItem.price;
+    selectedItem.regularPrice;
 
   return (
     <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -147,7 +147,10 @@ export const OrderDialog = ({
 
       <div className="py-4">
         {/* Product image */}
-        <ProductImage image={selectedItem.image} name={selectedItem.name} />
+        <ProductImage
+          image={selectedItem.image || ""}
+          name={selectedItem.name}
+        />
 
         {/* Product variations */}
         <ProductVariations
@@ -179,7 +182,7 @@ export const OrderDialog = ({
 
         {/* Price summary */}
         <PriceSummary
-          basePrice={selectedItem.price}
+          basePrice={selectedItem.regularPrice}
           quantity={quantity}
           selectedOptionals={selectedOptionals}
           optionalItems={optionalItems}

@@ -25,7 +25,7 @@ type Product = {
   image?: string | null;
   categoryId: number;
   category?: Category;
-  variants?: Variant[];
+  variants: Variant[];
   dealItems?: DealItem[];
   optionalItems?: Product[];
   usedInProducts?: Product[];

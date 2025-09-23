@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 export const useOrderDialog = (navigate: any, toast: any) => {
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariation, setSelectedVariation] = useState(null);
   const [selectedOptionals, setSelectedOptionals] = useState({});
@@ -38,10 +38,11 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     const cart = getCart();
 
     // Create the new order item with all selected options
+    if (!selectedItem) return;
     const orderItem = {
       ...selectedItem,
       quantity: quantity,
-      totalPrice: selectedItem.price * quantity,
+      totalPrice: selectedItem.regularPrice * quantity,
       // Add selected variation and optionals if implemented
       options: {
         variation: selectedVariation,
@@ -55,9 +56,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     // Save back to localStorage
     saveCart(cart);
 
-    toast({
-      description: `Added ${selectedItem.name} to cart`,
-    });
+    toast.success(`Added ${selectedItem.name} to cart`);
 
     // Close the dialog and stay on the same screen
     setSelectedItem(null);
@@ -82,9 +81,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
 
     // Save back to localStorage
     saveCart(cart);
-    toast({
-      description: `Added ${item.name} to cart`,
-    });
+    toast.success(`Added ${item.name} to cart`);
   };
 
   const increaseQuantity = () => {

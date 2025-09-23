@@ -10,3 +10,9 @@ export function isMobileDevice(userAgent: string | null): boolean {
   if (!userAgent) return false;
   return /iPhone|Android.*Mobile|Windows Phone/i.test(userAgent);
 }
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};

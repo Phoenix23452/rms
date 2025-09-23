@@ -54,8 +54,8 @@ export default function MenuPage({
     decreaseQuantity,
     handleConfirmOrder,
   } = useOrderDialog(navigate, toast);
-
-  const { productVariations, optionalItems } = useProductOptions(selectedItem);
+  console.log(selectedItem);
+  const { optionalItems } = useProductOptions(selectedItem);
 
   // Update cart count when order is confirmed
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function MenuPage({
             decreaseQuantity={decreaseQuantity}
             increaseQuantity={increaseQuantity}
             handleConfirmOrder={handleConfirmOrder}
-            productVariations={productVariations}
+            productVariations={selectedItem.variants}
             optionalItems={optionalItems}
           />
         )}
