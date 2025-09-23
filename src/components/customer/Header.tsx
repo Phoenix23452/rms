@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 // import { useAuth } from "@/contexts/AuthContext"; // disabled for now
 import Link from "next/link";
@@ -7,6 +7,7 @@ import Link from "next/link";
 const Header = () => {
   // 🔧 Dummy values for now
   const user = { email: "demo@user.com" };
+  const [cartCount, setCartCount] = useState(0);
   const isAuthenticated = false; // change to true to simulate logged-in state
   const logout = async () => {
     console.log("Fake logout called");
@@ -31,6 +32,19 @@ const Header = () => {
       return 0;
     }
   };
+  // Load cart count on mount
+  useEffect(() => {
+    setCartCount(getCartCount());
+
+    // Listen to custom cart update events
+    const updateCart = () => setCartCount(getCartCount());
+    window.addEventListener("cartUpdated", updateCart);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("cartUpdated", updateCart);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -85,7 +99,7 @@ const Header = () => {
               Cart
               {getCartCount() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {getCartCount()}
+                  {cartCount}
                 </span>
               )}
             </Button>

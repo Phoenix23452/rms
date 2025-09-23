@@ -34,34 +34,29 @@ const promotionCodes = [
   },
 ];
 
+// 🛠 helper: read + validate cart
+const getCartFromStorage = () => {
+  if (typeof window === "undefined") return [];
+  const savedCart = localStorage.getItem("cart");
+  if (!savedCart) return [];
+  try {
+    const parsedCart = JSON.parse(savedCart);
+    return parsedCart.map((item: any) => ({
+      ...item,
+      quantity: item.quantity || 1,
+      price: item.regularPrice || item.price || 0,
+      totalPrice: item.totalPrice || (item.price || 0) * (item.quantity || 1),
+      options: item.options || [],
+    }));
+  } catch (error) {
+    console.error("Error parsing cart data:", error);
+    return [];
+  }
+};
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState<any>([]);
+  const [cartItems, setCartItems] = useState<any>(getCartFromStorage());
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
-
-  useEffect(() => {
-    // Load cart items from local storage
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-
-        // Ensure each item has the required properties
-        const validatedCart = parsedCart.map((item: any) => ({
-          ...item,
-          quantity: item.quantity || 1,
-          price: item.price || 0,
-          totalPrice: item.totalPrice || item.price * (item.quantity || 1),
-          options: item.options || [],
-        }));
-
-        setCartItems(validatedCart);
-      } catch (error) {
-        console.error("Error parsing cart data:", error);
-        setCartItems([]);
-      }
-    }
-  }, []);
 
   // Calculate subtotal
   const subtotal =
@@ -156,6 +151,7 @@ const CartPage = () => {
   // Update local storage whenever cart changes
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
+    window.dispatchEvent(new CustomEvent("cartUpdated"));
   }, [cartItems]);
 
   return (
