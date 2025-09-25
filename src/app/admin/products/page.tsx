@@ -5,7 +5,7 @@ import ProductsClient from "./ProductsClient";
 
 export const dynamic = "force-dynamic"; // SSR with auto-updates
 
-export default async function CategoriesPage() {
+export default async function ProductPage() {
   const products = await getProducts(); // SSR
   const categories = await getCategories(); // SSR
   const deals = await getDeals(); // SSR

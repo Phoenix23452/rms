@@ -24,6 +24,7 @@ export const productSchema = z
       .optional(),
     description: z.string().optional(),
     isFeatured: z.boolean().optional(),
+    isOptional: z.boolean().optional(),
     isPopular: z.boolean().optional(),
     image: z.string().url("Must be a valid URL").optional(),
     variants: z.array(variantSchema).optional(),

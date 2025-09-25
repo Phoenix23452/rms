@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +16,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Upload, X, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { getCategories, createProduct } from "@/app/admin/products/actions";
+import {
+  getCategories,
+  createProduct,
+  getOptionalProducts,
+} from "@/app/admin/products/actions";
 
 export default function CreateProductPage() {
   const router = useRouter();
@@ -35,15 +38,19 @@ export default function CreateProductPage() {
     discountPercentage: 0,
     status: true,
     isFeatured: false,
+    isOptional: false,
     isPopular: false,
   });
 
   const [variants, setVariants] = useState([{ name: "Regular", price: 0 }]);
 
+  const [optionalProducts, setOptionalProducts] = useState<Product[]>();
+  const [optionalItems, setOptionalItems] = useState<number[]>();
   useEffect(() => {
     getCategories().then((data) => setCategories(data));
+    getOptionalProducts().then((data) => setOptionalProducts(data));
   }, []);
-  console.log(categories);
+  console.log(optionalProducts);
   useEffect(() => {
     if (formData.name) {
       const slug = formData.name
@@ -100,6 +107,7 @@ export default function CreateProductPage() {
       const payload = {
         ...formData,
         variants,
+        optionalItems,
         image: imageUrl,
       };
 
@@ -219,6 +227,13 @@ export default function CreateProductPage() {
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <Switch
+                  checked={formData.isOptional}
+                  onCheckedChange={(val) => handleChange("isOptional", val)}
+                />
+                <Label>Mark as Optional</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
                   checked={formData.isFeatured}
                   onCheckedChange={(val) => handleChange("isFeatured", val)}
                 />
@@ -234,6 +249,48 @@ export default function CreateProductPage() {
             </div>
           </CardContent>
         </Card>
+
+        {!formData.isOptional && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Optional Product</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4">
+                {optionalProducts?.map((product) => {
+                  const isSelected = optionalItems?.includes(product.id);
+                  return (
+                    <div
+                      key={product.id}
+                      onClick={() => {
+                        setOptionalItems((prev: number[] = []) => {
+                          if (prev.includes(product.id)) {
+                            // remove if already selected
+                            return prev.filter((id) => id !== product.id);
+                          } else {
+                            // add if not selected
+                            return [...prev, product.id];
+                          }
+                        });
+                      }}
+                      className={`cursor-pointer border rounded-lg p-2 flex flex-col items-center justify-center transition
+                ${isSelected ? "border-blue-500" : "border-gray-300"}`}
+                    >
+                      <img
+                        src={product.image || ""}
+                        alt={product.name}
+                        className="h-16 w-16 object-cover rounded-md mb-2"
+                      />
+                      <p className="text-sm font-medium text-center">
+                        {product.name}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -267,9 +324,10 @@ export default function CreateProductPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      document.getElementById("image-upload")?.click()
-                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById("image-upload")?.click();
+                    }}
                   >
                     Browse
                   </Button>
@@ -336,7 +394,7 @@ export default function CreateProductPage() {
           <Button
             variant="outline"
             type="button"
-            onClick={() => router.push("/products")}
+            onClick={() => router.push("/admin/products")}
           >
             Cancel
           </Button>

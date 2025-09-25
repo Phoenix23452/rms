@@ -16,6 +16,16 @@ export async function getProducts() {
   const { data } = await res.json();
   return data;
 }
+export async function getOptionalProducts() {
+  const res = await fetch(
+    `${API_BASE}/api/products?isOptional=true&include=variants`,
+    {
+      cache: "no-store",
+    },
+  );
+  const { data } = await res.json();
+  return data;
+}
 
 export async function getCategories() {
   const res = await fetch(`${API_BASE}/api/categories`, {

@@ -46,6 +46,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct, getCategories, updateProduct } from "./actions";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ProductsClient = ({
   initialProducts,
@@ -535,7 +536,7 @@ const ProductsClient = ({
 
       {/* Edit Product Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="md:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
@@ -607,7 +608,7 @@ const ProductsClient = ({
                       updateProductField("categoryId", selectedCategory?.id);
                     }}
                   >
-                    <SelectTrigger id="product-category">
+                    <SelectTrigger id="product-category" className="w-full">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -625,13 +626,16 @@ const ProductsClient = ({
                 <div>
                   <Label htmlFor="product-status">Status</Label>
                   <Select
-                    value={`'${editedProduct.status}'`}
+                    value={`${editedProduct.status}`}
                     onValueChange={(value) =>
                       updateProductField("status", value === "true")
                     }
                   >
-                    <SelectTrigger id="product-status">
-                      <SelectValue placeholder="Select status" />
+                    <SelectTrigger id="product-status" className="w-full">
+                      <SelectValue
+                        placeholder="Select status"
+                        className="w-full"
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={"true"}>Active</SelectItem>
@@ -640,7 +644,7 @@ const ProductsClient = ({
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex w-full items-center gap-4 md:col-span-2">
                   <div className="flex-1">
                     <Label htmlFor="product-price">Regular Price ($)</Label>
                     <Input
@@ -674,23 +678,33 @@ const ProductsClient = ({
                 </div>
 
                 <div className="md:col-span-2 flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
+                    id="product-optional"
+                    checked={editedProduct.isOptional}
+                    onCheckedChange={(checked) =>
+                      updateProductField("isOptional", checked)
+                    }
+                  />
+                  <Label htmlFor="product-optional">Mark as Optional</Label>
+                </div>
+                <div className="md:col-span-2 flex items-center gap-2">
+                  <Checkbox
                     id="product-popular"
                     checked={editedProduct.isPopular}
-                    onChange={(e) =>
-                      updateProductField("isPopular", e.target.checked)
-                    }
+                    onCheckedChange={(checked) => {
+                      updateProductField("isPopular", checked);
+                      console.log(editedProduct);
+                      console.log(editedProduct);
+                    }}
                   />
                   <Label htmlFor="product-popular">Mark as popular</Label>
                 </div>
                 <div className="md:col-span-2 flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="product-feature"
                     checked={editedProduct.isFeatured}
-                    onChange={(e) =>
-                      updateProductField("isPopular", e.target.checked)
+                    onCheckedChange={(checked) =>
+                      updateProductField("isPopular", checked)
                     }
                   />
                   <Label htmlFor="product-popular">Mark as Featured</Label>
