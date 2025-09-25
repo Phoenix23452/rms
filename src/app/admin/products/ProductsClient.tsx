@@ -43,8 +43,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
-import { deleteProduct, getCategories, updateProduct } from "./actions";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  deleteProduct,
+  getCategories,
+  getOptionalProducts,
+  updateProduct,
+} from "./actions";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -64,9 +75,16 @@ const ProductsClient = ({
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState<any>(null);
+  const [currentProduct, setCurrentProduct] = useState<Product | null | Deal>(
+    null,
+  );
   const [editedProduct, setEditedProduct] = useState<any>(null);
 
+  const [optionalProducts, setOptionalProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    getOptionalProducts().then((data) => setOptionalProducts(data));
+  }, []);
   // Filter products based on search query and category
   const filteredProducts = initialProducts?.filter((product) => {
     const matchesSearch =
@@ -93,13 +111,17 @@ const ProductsClient = ({
     }
   }, [searchParams]);
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
+    const optionalItems = Array.isArray(product.optionalItems)
+      ? product.optionalItems.map((item: Product) => item.id)
+      : [];
     setCurrentProduct(product);
-    setEditedProduct({ ...product }); // Create a copy to edit
+    setEditedProduct({ ...product, optionalItems }); // Create a copy to edit
+    console.log("Edited Product : ", editedProduct);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteProduct = (product: any) => {
+  const handleDeleteProduct = (product: Product) => {
     setCurrentProduct(product);
     setDeleteDialogOpen(true);
   };
@@ -537,224 +559,300 @@ const ProductsClient = ({
       {/* Edit Product Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="md:max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+          {/* <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
               Make changes to your product here. Click save when you're done.
             </DialogDescription>
-          </DialogHeader>
+          </DialogHeader> */}
 
           {editedProduct && (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2 flex items-start gap-4">
-                  <div className="relative group">
-                    <img
-                      src={editedProduct.image}
-                      alt={editedProduct.name}
-                      className="h-24 w-24 rounded-md object-cover border"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center rounded-md">
-                      <Label
-                        htmlFor="thumbnail-upload"
-                        className="cursor-pointer flex flex-col items-center justify-center text-white"
-                      >
-                        <Camera className="h-6 w-6" />
-                        <span className="text-xs">Change</span>
-                      </Label>
-                      <Input
-                        id="thumbnail-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileChange}
+                <Card className="md:col-span-2 ">
+                  <CardHeader>
+                    <CardTitle>Edit Product</CardTitle>
+                    <CardDescription>
+                      Make changes to your product here. Click save when you're
+                      done.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4 ">
+                    <div className="md:col-span-2 flex items-start gap-4">
+                      <div className="relative group">
+                        <img
+                          src={editedProduct.image}
+                          alt={editedProduct.name}
+                          className="h-24 w-24 rounded-md object-cover border"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center rounded-md">
+                          <Label
+                            htmlFor="thumbnail-upload"
+                            className="cursor-pointer flex flex-col items-center justify-center text-white"
+                          >
+                            <Camera className="h-6 w-6" />
+                            <span className="text-xs">Change</span>
+                          </Label>
+                          <Input
+                            id="thumbnail-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="product-name">Name</Label>
+                        <Input
+                          id="product-name"
+                          value={editedProduct.name}
+                          onChange={(e) =>
+                            updateProductField("name", e.target.value)
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2 space-y-2">
+                      <Label htmlFor="product-description">Description</Label>
+                      <Textarea
+                        id="product-description"
+                        value={editedProduct.description || ""}
+                        onChange={(e) =>
+                          updateProductField("description", e.target.value)
+                        }
+                        rows={3}
                       />
                     </div>
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor="product-name">Name</Label>
-                    <Input
-                      id="product-name"
-                      value={editedProduct.name}
-                      onChange={(e) =>
-                        updateProductField("name", e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
 
-                <div className="md:col-span-2">
-                  <Label htmlFor="product-description">Description</Label>
-                  <Textarea
-                    id="product-description"
-                    value={editedProduct.description || ""}
-                    onChange={(e) =>
-                      updateProductField("description", e.target.value)
-                    }
-                    rows={3}
-                  />
-                </div>
+                    <div className="flex w-full items-center gap-4">
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="product-category">Category</Label>
+                        <Select
+                          value={editedProduct.category.slug}
+                          onValueChange={(selectedSlug) => {
+                            const selectedCategory = categories.find(
+                              (cat) => cat.slug === selectedSlug,
+                            );
 
-                <div>
-                  <Label htmlFor="product-category">Category</Label>
-                  <Select
-                    value={editedProduct.category.slug}
-                    onValueChange={(selectedSlug) => {
-                      const selectedCategory = categories.find(
-                        (cat) => cat.slug === selectedSlug,
-                      );
+                            updateProductField("category", selectedCategory);
+                            updateProductField(
+                              "categoryId",
+                              selectedCategory?.id,
+                            );
+                          }}
+                        >
+                          <SelectTrigger
+                            id="product-category"
+                            className="w-full"
+                          >
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories
+                              ?.filter((c) => c.name !== "All Categories")
+                              .map((category) => (
+                                <SelectItem
+                                  key={category.id}
+                                  value={category.slug}
+                                >
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                      updateProductField("category", selectedCategory);
-                      updateProductField("categoryId", selectedCategory?.id);
-                    }}
-                  >
-                    <SelectTrigger id="product-category" className="w-full">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories
-                        ?.filter((c) => c.name !== "All Categories")
-                        .map((category) => (
-                          <SelectItem key={category.id} value={category.slug}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="product-status">Status</Label>
+                        <Select
+                          value={`${editedProduct.status}`}
+                          onValueChange={(value) =>
+                            updateProductField("status", value === "true")
+                          }
+                        >
+                          <SelectTrigger id="product-status" className="w-full">
+                            <SelectValue
+                              placeholder="Select status"
+                              className="w-full"
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value={"true"}>Active</SelectItem>
+                            <SelectItem value={"false"}>Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
 
-                <div>
-                  <Label htmlFor="product-status">Status</Label>
-                  <Select
-                    value={`${editedProduct.status}`}
-                    onValueChange={(value) =>
-                      updateProductField("status", value === "true")
-                    }
-                  >
-                    <SelectTrigger id="product-status" className="w-full">
-                      <SelectValue
-                        placeholder="Select status"
-                        className="w-full"
+                    <div className="flex w-full items-center gap-4 md:col-span-2">
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="product-price">Regular Price ($)</Label>
+                        <Input
+                          id="product-price"
+                          type="number"
+                          step="0.01"
+                          value={editedProduct.regularPrice}
+                          onChange={(e) =>
+                            updateProductField(
+                              "price",
+                              parseFloat(e.target.value),
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="product-offer-price">
+                          Discount Percentage ($)
+                        </Label>
+                        <Input
+                          id="product-offer-price"
+                          type="number"
+                          step="0.01"
+                          value={editedProduct.discountPercentage || ""}
+                          onChange={(e) =>
+                            updateProductField(
+                              "discountPercentage",
+                              e.target.value
+                                ? parseFloat(e.target.value)
+                                : null,
+                            )
+                          }
+                          placeholder="No Discount"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2 flex items-center gap-2">
+                      <Checkbox
+                        id="product-optional"
+                        checked={editedProduct.isOptional}
+                        onCheckedChange={(checked) =>
+                          updateProductField("isOptional", checked)
+                        }
                       />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={"true"}>Active</SelectItem>
-                      <SelectItem value={"false"}>Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                      <Label htmlFor="product-optional">Mark as Optional</Label>
+                    </div>
+                    <div className="md:col-span-2 flex items-center gap-2">
+                      <Checkbox
+                        id="product-popular"
+                        checked={editedProduct.isPopular}
+                        onCheckedChange={(checked) => {
+                          updateProductField("isPopular", checked);
+                          console.log(editedProduct);
+                          console.log(editedProduct);
+                        }}
+                      />
+                      <Label htmlFor="product-popular">Mark as popular</Label>
+                    </div>
+                    <div className="md:col-span-2 flex items-center gap-2">
+                      <Checkbox
+                        id="product-feature"
+                        checked={editedProduct.isFeatured}
+                        onCheckedChange={(checked) =>
+                          updateProductField("isPopular", checked)
+                        }
+                      />
+                      <Label htmlFor="product-popular">Mark as Featured</Label>
+                    </div>
+                  </CardContent>
+                </Card>
+                {!editedProduct.isOptional && (
+                  <Card className="md:col-span-2">
+                    <CardHeader>
+                      <CardTitle>Optional Products</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-4">
+                        {optionalProducts?.map((product) => {
+                          const isSelected =
+                            editedProduct.optionalItems?.includes(product.id);
 
-                <div className="flex w-full items-center gap-4 md:col-span-2">
-                  <div className="flex-1">
-                    <Label htmlFor="product-price">Regular Price ($)</Label>
-                    <Input
-                      id="product-price"
-                      type="number"
-                      step="0.01"
-                      value={editedProduct.regularPrice}
-                      onChange={(e) =>
-                        updateProductField("price", parseFloat(e.target.value))
-                      }
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor="product-offer-price">
-                      Discount Percentage ($)
-                    </Label>
-                    <Input
-                      id="product-offer-price"
-                      type="number"
-                      step="0.01"
-                      value={editedProduct.discountPercentage || ""}
-                      onChange={(e) =>
-                        updateProductField(
-                          "discountPercentage",
-                          e.target.value ? parseFloat(e.target.value) : null,
-                        )
-                      }
-                      placeholder="No Discount"
-                    />
-                  </div>
-                </div>
+                          return (
+                            <div
+                              key={product.id}
+                              onClick={() => {
+                                setEditedProduct((prev: any) => {
+                                  const current = prev.optionalItems || [];
+                                  const newItems = current.includes(product.id)
+                                    ? current.filter(
+                                        (id: number) => id !== product.id,
+                                      )
+                                    : [...current, product.id];
 
-                <div className="md:col-span-2 flex items-center gap-2">
-                  <Checkbox
-                    id="product-optional"
-                    checked={editedProduct.isOptional}
-                    onCheckedChange={(checked) =>
-                      updateProductField("isOptional", checked)
-                    }
-                  />
-                  <Label htmlFor="product-optional">Mark as Optional</Label>
-                </div>
-                <div className="md:col-span-2 flex items-center gap-2">
-                  <Checkbox
-                    id="product-popular"
-                    checked={editedProduct.isPopular}
-                    onCheckedChange={(checked) => {
-                      updateProductField("isPopular", checked);
-                      console.log(editedProduct);
-                      console.log(editedProduct);
-                    }}
-                  />
-                  <Label htmlFor="product-popular">Mark as popular</Label>
-                </div>
-                <div className="md:col-span-2 flex items-center gap-2">
-                  <Checkbox
-                    id="product-feature"
-                    checked={editedProduct.isFeatured}
-                    onCheckedChange={(checked) =>
-                      updateProductField("isPopular", checked)
-                    }
-                  />
-                  <Label htmlFor="product-popular">Mark as Featured</Label>
-                </div>
-
-                <div className="md:col-span-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>Product Variants</Label>
+                                  return { ...prev, optionalItems: newItems };
+                                });
+                              }}
+                              className={`cursor-pointer border rounded-lg p-2 flex flex-col items-center justify-center transition
+                ${isSelected ? "border-primary" : "border-gray-300"}`}
+                            >
+                              <img
+                                src={product.image || ""}
+                                alt={product.name}
+                                className="h-16 w-16 object-cover rounded-md mb-2"
+                              />
+                              <p className="text-sm font-medium text-center">
+                                {product.name}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                <Card className="md:col-span-2">
+                  <CardHeader className="flex items-center justify-between">
+                    <CardTitle>Product Variants</CardTitle>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={addVariant}
                     >
-                      <PlusIcon className="h-4 w-4 mr-1" /> Add Variant
+                      <PlusIcon className="h-4 w-4 " /> Add Variant
                     </Button>
-                  </div>
-
-                  {editedProduct.variants.map((variant: any, index: number) => (
-                    <div key={index} className="flex items-center gap-2 mb-2">
-                      <Input
-                        placeholder="Size/Variant"
-                        value={variant.name}
-                        onChange={(e) =>
-                          updateVariantField(index, "name", e.target.value)
-                        }
-                        className="flex-1"
-                      />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Price ($)"
-                        value={variant.price}
-                        onChange={(e) =>
-                          updateVariantField(index, "price", e.target.value)
-                        }
-                        className="w-20"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500"
-                        onClick={() => removeVariant(index)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                  </CardHeader>
+                  <CardContent>
+                    {editedProduct.variants.map(
+                      (variant: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 mb-2"
+                        >
+                          <Input
+                            placeholder="Size/Variant"
+                            value={variant.name}
+                            onChange={(e) =>
+                              updateVariantField(index, "name", e.target.value)
+                            }
+                            className="flex-1"
+                          />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Price ($)"
+                            value={variant.price}
+                            onChange={(e) =>
+                              updateVariantField(index, "price", e.target.value)
+                            }
+                            className="w-20"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500"
+                            onClick={() => removeVariant(index)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ),
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}

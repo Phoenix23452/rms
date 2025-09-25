@@ -8,7 +8,7 @@ const API_BASE = config.env.apiEndpoint || "http://localhost:3000";
 
 export async function getProducts() {
   const res = await fetch(
-    `${API_BASE}/api/products?include=variants,category`,
+    `${API_BASE}/api/products?include=variants,category,optionalItems`,
     {
       cache: "no-store",
     },
