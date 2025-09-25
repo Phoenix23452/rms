@@ -13,7 +13,7 @@ export default async function ClientLayout({
   const ua = (await headers()).get("user-agent");
   const isMobile = isMobileDevice(ua);
   return (
-    <div className="h-screen flex flex-col overflow-hidden  bg-background">
+    <div className="h-screen  flex flex-col  bg-background">
       {/* Header - Fixed on mobile for app-like experience */}
       <div
         className={cn(

@@ -176,8 +176,8 @@ const CheckoutPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Checkout Form */}
-        <div className="md:col-span-2 space-y-6">
-          <form onSubmit={handleSubmit}>
+        <div className="md:col-span-2">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Delivery Options */}
             <Card>
               <CardHeader>
@@ -488,7 +488,7 @@ const CheckoutPage = () => {
                 </RadioGroup>
 
                 {paymentMethod === "card" && (
-                  <div className="space-y-4 mt-4">
+                  <div className="space-y-4 mt-4 min-h-36">
                     <div>
                       <Label htmlFor="cardNumber" className="block mb-2">
                         Card Number
@@ -533,7 +533,7 @@ const CheckoutPage = () => {
                 )}
 
                 {paymentMethod === "mobile" && (
-                  <div className="mt-4 text-center">
+                  <div className="mt-4 text-center min-h-36">
                     <p className="text-muted-foreground">
                       You'll be redirected to complete payment through your
                       mobile payment provider after placing your order.
@@ -542,7 +542,7 @@ const CheckoutPage = () => {
                 )}
 
                 {paymentMethod === "cash" && (
-                  <div className="mt-4 text-center">
+                  <div className="mt-4 text-center min-h-36">
                     <p className="text-muted-foreground">
                       Please have the exact amount ready for the delivery
                       driver.
