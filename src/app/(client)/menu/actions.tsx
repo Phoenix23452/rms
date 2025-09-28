@@ -16,7 +16,7 @@ export async function getCategories() {
 
 export async function getProducts() {
   const res = await fetch(
-    `${API_BASE}/api/products?include=variants,category`,
+    `${API_BASE}/api/products?include=variants,category,optionalItems.variants`,
     {
       cache: "no-store",
     },

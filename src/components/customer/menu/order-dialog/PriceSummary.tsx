@@ -1,20 +1,10 @@
 import React from "react";
 
-interface OptionalItem {
-  id: number;
-  name: string;
-  variations: {
-    id: number;
-    name: string;
-    price: number;
-  }[];
-}
-
 interface PriceSummaryProps {
   basePrice: number;
   quantity: number;
   selectedOptionals: { [key: number]: number | null };
-  optionalItems: OptionalItem[];
+  optionalItems?: Product[];
   selectedVariationPrice: number;
   totalPrice: number;
   // loyaltyPoints?: any;
@@ -40,8 +30,8 @@ export const PriceSummary = ({
 
       {Object.entries(selectedOptionals).map(([itemId, variationId]) => {
         if (variationId === null) return null;
-        const item = optionalItems.find((o) => o.id === parseInt(itemId));
-        const variation = item?.variations.find((v) => v.id === variationId);
+        const item = optionalItems?.find((o) => o.id === parseInt(itemId));
+        const variation = item?.variants.find((v) => v.id === variationId);
         if (!item || !variation) return null;
 
         return (

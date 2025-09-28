@@ -25,7 +25,7 @@ interface OrderDialogProps {
   increaseQuantity: () => void;
   handleConfirmOrder: () => void;
   productVariations: Variant[];
-  optionalItems: any[];
+  optionalItems?: Product[];
 }
 
 export const OrderDialog = ({
@@ -54,11 +54,11 @@ export const OrderDialog = ({
     // Add optional items
     Object.entries(selectedOptionals).forEach(([itemId, variationId]) => {
       if (variationId !== null) {
-        const optionalItem = optionalItems.find(
+        const optionalItem = optionalItems?.find(
           (o) => o.id === parseInt(itemId),
         );
         if (optionalItem) {
-          const optVariation = optionalItem.variations.find(
+          const optVariation = optionalItem.variants.find(
             (v: any) => v.id === variationId,
           );
           if (optVariation) {
@@ -75,7 +75,7 @@ export const OrderDialog = ({
     setSelectedOptionals((prev) => ({
       ...prev,
       [itemId]: checked
-        ? optionalItems.find((o) => o.id === itemId)?.variations[0]?.id || null
+        ? optionalItems?.find((o) => o.id === itemId)?.variants[0]?.id || null
         : null,
     }));
   };
@@ -97,10 +97,10 @@ export const OrderDialog = ({
     const optionals = Object.entries(selectedOptionals)
       .filter(([_, variationId]) => variationId !== null)
       .map(([itemId, variationId]) => {
-        const optionalItem = optionalItems.find(
+        const optionalItem = optionalItems?.find(
           (o) => o.id === parseInt(itemId),
         );
-        const optVariation = optionalItem?.variations.find(
+        const optVariation = optionalItem?.variants.find(
           (v: any) => v.id === variationId,
         );
         return {

@@ -147,7 +147,7 @@ export default function MenuPage({
             increaseQuantity={increaseQuantity}
             handleConfirmOrder={handleConfirmOrder}
             productVariations={selectedItem.variants}
-            optionalItems={optionalItems}
+            optionalItems={selectedItem.optionalItems}
           />
         )}
       </AlertDialog>
