@@ -3,7 +3,7 @@ import React from "react";
 interface PriceSummaryProps {
   basePrice: number;
   quantity: number;
-  selectedOptionals: { [key: number]: number | null };
+  selectedOptionals: Variant[];
   optionalItems?: Product[];
   selectedVariationPrice: number;
   totalPrice: number;
@@ -28,21 +28,19 @@ export const PriceSummary = ({
         </span>
       </div>
 
-      {Object.entries(selectedOptionals).map(([itemId, variationId]) => {
-        if (variationId === null) return null;
-        const item = optionalItems?.find((o) => o.id === parseInt(itemId));
-        const variation = item?.variants.find((v) => v.id === variationId);
-        if (!item || !variation) return null;
-
+      {selectedOptionals.map((variant) => {
+        if (variant.id === null) return null;
+        const item = optionalItems?.find((o) => o.id === variant.productId);
+        if (!item || !variant) return null;
         return (
           <div
-            key={`${itemId}-${variationId}`}
+            key={`${item.id}-${variant.id}`}
             className="flex items-center justify-between text-sm"
           >
             <span>
-              {item.name} ({variation.name}):
+              {item.name} ({variant.name}):
             </span>
-            <span>${variation.price.toFixed(2)}</span>
+            <span>${variant.price.toFixed(2)}</span>
           </div>
         );
       })}

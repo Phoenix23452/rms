@@ -4,10 +4,10 @@ import { useState } from "react";
 export const useOrderDialog = (navigate: any, toast: any) => {
   const [selectedItem, setSelectedItem] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariation, setSelectedVariation] = useState(null);
-  const [selectedOptionals, setSelectedOptionals] = useState({});
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [selectedOptionals, setSelectedOptionals] = useState<Variant[]>([]);
 
-  const getCart = () => {
+  const getCart = (): OrderItem[] => {
     if (typeof window === "undefined") return []; // SSR safety
     try {
       const existingCart = localStorage.getItem("cart");
@@ -21,38 +21,63 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     return [];
   };
 
-  const saveCart = (cart: any[]) => {
+  const saveCart = (cart: OrderItem[]) => {
     if (typeof window === "undefined") return;
     localStorage.setItem("cart", JSON.stringify(cart));
   };
 
-  const handleOrderNow = (item: any) => {
+  const calculateUnitPrice = (
+    product: Product,
+    variant?: Variant | null,
+  ): number => {
+    let basePrice = variant ? variant.price : product.regularPrice;
+    if (product.discountPercentage) {
+      basePrice = basePrice - (basePrice * product.discountPercentage) / 100;
+    }
+    return basePrice;
+  };
+
+  const handleOrderNow = (item: Product) => {
     setSelectedItem(item);
     setQuantity(1);
-    setSelectedVariation(null);
-    setSelectedOptionals({});
+    setSelectedVariant(item.variants[0]);
+    setSelectedOptionals([]);
   };
 
   const handleConfirmOrder = () => {
     // Get current cart from localStorage
     const cart = getCart();
 
+    // determine unit price
     // Create the new order item with all selected options
     if (!selectedItem) return;
-    const orderItem = {
+    const unitPrice = calculateUnitPrice(selectedItem, selectedVariant);
+    const totalPrice = unitPrice * quantity;
+    const orderItem: OrderItem = {
       ...selectedItem,
       quantity: quantity,
-      totalPrice: selectedItem.regularPrice * quantity,
+      price: totalPrice,
+      unitPrice,
+      variantId: selectedVariant?.id,
+      variant: selectedVariant,
+      optionalItems: selectedOptionals,
       // Add selected variation and optionals if implemented
-      options: {
-        variation: selectedVariation,
-        optionals: selectedOptionals,
-      },
     };
-
+    const existingIndex = cart.findIndex(
+      (c) =>
+        c.variantId === orderItem.variantId &&
+        (!c.variantId || c.variantId === orderItem.variantId),
+    );
+    if (existingIndex >= 0) {
+      // update quantity and price
+      cart[existingIndex].quantity += quantity;
+      cart[existingIndex].price =
+        cart[existingIndex].unitPrice * cart[existingIndex].quantity;
+    } else {
+      cart.push(orderItem);
+    }
     // Add the new item to cart
-    cart.push(orderItem);
-
+    console.log("Cart", orderItem);
     // Save back to localStorage
     saveCart(cart);
 
@@ -65,19 +90,32 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     window.dispatchEvent(new CustomEvent("cartUpdated"));
   };
 
-  const handleAddToCart = (item: any) => {
+  const handleAddToCart = (item: Product) => {
     // Get current cart from localStorage
     const cart = getCart();
 
+    const unitPrice = calculateUnitPrice(item);
     // Create the new cart item
-    const cartItem = {
+    const cartItem: OrderItem = {
       ...item,
       quantity: 1,
-      totalPrice: item.price,
+      unitPrice,
+      price: unitPrice,
+      optionalItems: [],
     };
 
-    // Add the new item to cart
-    cart.push(cartItem);
+    // check if same product (no variant)
+    const existingIndex = cart.findIndex(
+      (c) => !c.variantId && item.id === c.variant?.productId,
+    );
+
+    if (existingIndex >= 0) {
+      cart[existingIndex].quantity += 1;
+      cart[existingIndex].price =
+        cart[existingIndex].unitPrice * cart[existingIndex].quantity;
+    } else {
+      cart.push(cartItem);
+    }
 
     // Save back to localStorage
     saveCart(cart);
@@ -103,8 +141,8 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     decreaseQuantity,
     handleConfirmOrder,
     handleAddToCart,
-    selectedVariation,
-    setSelectedVariation,
+    selectedVariant,
+    setSelectedVariant,
     selectedOptionals,
     setSelectedOptionals,
   };

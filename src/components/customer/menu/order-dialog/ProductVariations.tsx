@@ -2,16 +2,10 @@ import React from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
-interface Variation {
-  id: number;
-  name: string;
-  price: number;
-}
-
 interface ProductVariationsProps {
-  variations: Variation[];
-  selectedVariation: number;
-  onVariationChange: (variationId: number) => void;
+  variations: Variant[];
+  selectedVariation: Variant | null;
+  onVariationChange: (v: Variant) => void;
 }
 
 export const ProductVariations = ({
@@ -22,13 +16,18 @@ export const ProductVariations = ({
   if (!variations || variations.length === 0) {
     return null;
   }
-  console.log(variations);
+  const handleChange = (value: string) => {
+    const selected = variations.find((v) => v.id === Number(value));
+    if (selected) {
+      onVariationChange(selected);
+    }
+  };
   return (
     <div className="mb-4">
       <h3 className="text-sm font-medium mb-2">Select Size:</h3>
       <RadioGroup
-        value={selectedVariation.toString()}
-        onValueChange={(value) => onVariationChange(parseInt(value))}
+        value={selectedVariation?.id.toString()}
+        onValueChange={handleChange}
         className="flex flex-wrap gap-2"
       >
         {variations.map((variation) => (

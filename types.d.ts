@@ -113,8 +113,8 @@ type Order = {
 };
 
 type OrderItem = {
-  id: number;
-  orderId: number;
+  id?: number;
+  orderId?: number;
   order?: Order;
   variantId?: number | null;
   variant?: Variant | null;

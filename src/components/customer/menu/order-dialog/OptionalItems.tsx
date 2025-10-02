@@ -6,9 +6,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface OptionalItemsProps {
   items?: Product[];
-  selectedOptionals: { [key: number]: number | null };
-  onOptionalItemToggle: (itemId: number, checked: boolean) => void;
-  onOptionalVariationChange: (itemId: number, variationId: number) => void;
+  selectedOptionals: Variant[];
+  onOptionalItemToggle: (item: Product, checked: boolean) => void;
+  onOptionalVariationChange: (item: Product, variationId: number) => void;
 }
 
 export const OptionalItems = ({
@@ -25,34 +25,34 @@ export const OptionalItems = ({
     <div className="mb-4">
       <h3 className="text-sm font-medium mb-2">Optional Add-ons:</h3>
       <div className="space-y-4">
-        {items?.map((item) => (
-          <div key={item.id} className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id={`optional-${item.id}`}
-                checked={
-                  selectedOptionals[item.id] !== undefined &&
-                  selectedOptionals[item.id] !== null
-                }
-                onCheckedChange={(checked) =>
-                  onOptionalItemToggle(item.id, !!checked)
-                }
-              />
-              <Label htmlFor={`optional-${item.id}`} className="flex-grow">
-                {item.name}
-                <Badge variant="outline" className="ml-2">
-                  From ${item.variants[0].price.toFixed(2)}
-                </Badge>
-              </Label>
-            </div>
+        {items?.map((item) => {
+          const selectedVariant = selectedOptionals.find(
+            (v) => v.productId === item.id,
+          );
+          return (
+            <div key={item.id} className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`optional-${item.id}`}
+                  checked={!!selectedVariant}
+                  onCheckedChange={(checked) =>
+                    onOptionalItemToggle(item, !!checked)
+                  }
+                />
+                <Label htmlFor={`optional-${item.id}`} className="flex-grow">
+                  {item.name}
+                  <Badge variant="outline" className="ml-2">
+                    From ${item.variants[0].price.toFixed(2)}
+                  </Badge>
+                </Label>
+              </div>
 
-            {selectedOptionals[item.id] !== undefined &&
-              selectedOptionals[item.id] !== null && (
+              {selectedVariant && (
                 <div className="ml-6">
                   <RadioGroup
-                    value={selectedOptionals[item.id]?.toString() || ""}
+                    value={selectedVariant.id.toString() || ""}
                     onValueChange={(value) =>
-                      onOptionalVariationChange(item.id, parseInt(value))
+                      onOptionalVariationChange(item, parseInt(value))
                     }
                     className="flex flex-wrap gap-2"
                   >
@@ -77,8 +77,9 @@ export const OptionalItems = ({
                   </RadioGroup>
                 </div>
               )}
-          </div>
-        ))}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

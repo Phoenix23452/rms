@@ -48,12 +48,18 @@ export default function MenuPage({
 
   const {
     selectedItem,
+    setSelectedItem,
     quantity,
     handleOrderNow,
     increaseQuantity,
     decreaseQuantity,
     handleConfirmOrder,
+    selectedVariant,
+    setSelectedVariant,
+    selectedOptionals,
+    setSelectedOptionals,
   } = useOrderDialog(navigate, toast);
+
   console.log(selectedItem);
   const { optionalItems } = useProductOptions(selectedItem);
 
@@ -137,7 +143,14 @@ export default function MenuPage({
         </div>
       </div>
 
-      <AlertDialog open={!!selectedItem}>
+      <AlertDialog
+        open={!!selectedItem}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setSelectedItem(null); // Close the dialog
+          }
+        }}
+      >
         {selectedItem && (
           <OrderDialog
             selectedItem={selectedItem}
@@ -148,6 +161,10 @@ export default function MenuPage({
             handleConfirmOrder={handleConfirmOrder}
             productVariations={selectedItem.variants}
             optionalItems={selectedItem.optionalItems}
+            selectedVariant={selectedVariant}
+            setSelectedVariant={setSelectedVariant}
+            selectedOptionals={selectedOptionals}
+            setSelectedOptionals={setSelectedOptionals}
           />
         )}
       </AlertDialog>
