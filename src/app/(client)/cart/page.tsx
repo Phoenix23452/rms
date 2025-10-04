@@ -41,12 +41,12 @@ const getCartFromStorage = () => {
   if (!savedCart) return [];
   try {
     const parsedCart = JSON.parse(savedCart);
-    return parsedCart.map((item: any) => ({
+    return parsedCart.map((item: CartItem) => ({
       ...item,
       quantity: item.quantity || 1,
-      price: item.regularPrice || item.price || 0,
-      totalPrice: item.totalPrice || (item.price || 0) * (item.quantity || 1),
-      options: item.options || [],
+      price: item.product.regularPrice || item.price || 0,
+      totalPrice: item.price || (item.price || 0) * (item.quantity || 1),
+      options: item.optionalItems || [],
     }));
   } catch (error) {
     console.error("Error parsing cart data:", error);
@@ -54,7 +54,7 @@ const getCartFromStorage = () => {
   }
 };
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState<any>(getCartFromStorage());
+  const [cartItems, setCartItems] = useState<CartItem[]>(getCartFromStorage());
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
 
@@ -171,32 +171,44 @@ const CartPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {cartItems.map((item: any) => (
+                  {cartItems.map((item: CartItem) => (
                     <div key={item.id} className="flex space-x-4">
                       <img
-                        src={item.image || "https://placehold.co/100x100"}
-                        alt={item.name}
+                        src={
+                          item.product.image || "https://placehold.co/100x100"
+                        }
+                        alt={item.product.name}
                         className="h-24 w-24 rounded-md object-cover flex-shrink-0"
                       />
                       <div className="flex-1 space-y-1">
                         <div className="flex justify-between">
-                          <h3 className="font-medium">{item.name}</h3>
+                          <h3 className="font-medium">
+                            {item.product.name}{" "}
+                            <span className="font-mono  text-sm text-gray-700">
+                              ({item.variant?.name})
+                            </span>
+                          </h3>
                           <span className="font-medium">
-                            {formatCurrency(
-                              item.totalPrice || item.price * item.quantity,
-                            )}
+                            {formatCurrency(item.price * item.quantity)}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-1">
-                          {item.description || ""}
+                          {item.product.description || ""}
                         </p>
-                        <div className="flex flex-wrap gap-1">
-                          {item.options &&
-                            item.options.length > 0 &&
-                            item.options.map((option: any, idx: any) => (
-                              <Badge variant="secondary" key={idx}>
-                                {option}
-                              </Badge>
+                        <div className="flex flex-col gap-1">
+                          {item.optionalItems &&
+                            item.optionalItems.length > 0 &&
+                            item.optionalItems.map((option: Variant) => (
+                              <div className=" flex justify-between">
+                                <Badge variant="secondary" key={option.id}>
+                                  <span className="text-xs font-mono">
+                                    {option.product?.name} ({option.name})
+                                  </span>
+                                </Badge>
+                                <span className="font-light text-sm">
+                                  {formatCurrency(option.price)}
+                                </span>
+                              </div>
                             ))}
                         </div>
                         <div className="flex justify-between items-center mt-2">

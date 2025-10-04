@@ -85,7 +85,7 @@ export const OrderDialog = ({
 
   const handleOptionalItemToggle = (item: Product, checked: boolean) => {
     if (!item.variants.length) return;
-    const variation = item.variants[0];
+    const variation = { ...item.variants[0], product: item };
     setSelectedOptionals((prev: Variant[]) =>
       checked
         ? [...prev, variation]
@@ -101,7 +101,7 @@ export const OrderDialog = ({
     if (!variation) return;
     setSelectedOptionals((prev) => [
       ...prev.filter((v) => v.productId !== item.id),
-      variation,
+      { ...variation, product: item },
     ]);
   };
 

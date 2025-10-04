@@ -121,9 +121,12 @@ type OrderItem = {
   quantity: number;
   unitPrice: number;
   price: number;
+  regularPrice: number;
+  discountPercentage: number;
   note?: string | null;
   optionalItems?: Variant[];
 };
+type CartItem = OrderItem & { product: Product };
 
 type OrderTimeline = {
   id: number;

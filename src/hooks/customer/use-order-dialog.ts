@@ -7,7 +7,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [selectedOptionals, setSelectedOptionals] = useState<Variant[]>([]);
 
-  const getCart = (): OrderItem[] => {
+  const getCart = (): CartItem[] => {
     if (typeof window === "undefined") return []; // SSR safety
     try {
       const existingCart = localStorage.getItem("cart");
@@ -21,7 +21,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     return [];
   };
 
-  const saveCart = (cart: OrderItem[]) => {
+  const saveCart = (cart: CartItem[]) => {
     if (typeof window === "undefined") return;
     localStorage.setItem("cart", JSON.stringify(cart));
   };
@@ -53,8 +53,8 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     if (!selectedItem) return;
     const unitPrice = calculateUnitPrice(selectedItem, selectedVariant);
     const totalPrice = unitPrice * quantity;
-    const orderItem: OrderItem = {
-      ...selectedItem,
+    const orderItem: CartItem = {
+      product: selectedItem,
       quantity: quantity,
       price: totalPrice,
       unitPrice,
@@ -96,8 +96,8 @@ export const useOrderDialog = (navigate: any, toast: any) => {
 
     const unitPrice = calculateUnitPrice(item);
     // Create the new cart item
-    const cartItem: OrderItem = {
-      ...item,
+    const cartItem: CartItem = {
+      product: item,
       quantity: 1,
       unitPrice,
       price: unitPrice,

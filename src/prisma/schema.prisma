@@ -182,17 +182,19 @@ model Order {
 }
 
 model OrderItem {
-  id            Int       @id @default(autoincrement())
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId       Int
-  variant       Variant?  @relation(fields: [variantId], references: [id])
-  variantId     Int?
-  quantity      Int
-  unitPrice     Float // Store at the time of order
-  price         Float // unitPrice * quantity
-  note          String? // Optional note (e.g., spicy, no onions)
+  id                 Int       @id @default(autoincrement())
+  order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId            Int
+  variant            Variant?  @relation(fields: [variantId], references: [id])
+  variantId          Int?
+  quantity           Int
+  unitPrice          Float // Store at the time of order
+  price              Float // unitPrice * quantity
+  note               String? // Optional note (e.g., spicy, no onions)
+  regularPrice       Float
+  discountPricentage Float
   // Many-to-many relation for optional items (variants)
-  optionalItems Variant[] @relation("OrderItemOptionalItems")
+  optionalItems      Variant[] @relation("OrderItemOptionalItems")
 
   @@map("order_items")
 }
