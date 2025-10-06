@@ -51,6 +51,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     // determine unit price
     // Create the new order item with all selected options
     if (!selectedItem) return;
+    if (!selectedVariant) return;
     const unitPrice = calculateUnitPrice(selectedItem, selectedVariant);
     const totalPrice = unitPrice * quantity;
     const orderItem: CartItem = {
@@ -58,6 +59,8 @@ export const useOrderDialog = (navigate: any, toast: any) => {
       quantity: quantity,
       price: totalPrice,
       unitPrice,
+      regularPrice: selectedVariant.price,
+      discountPercentage: selectedItem.discountPercentage,
       variantId: selectedVariant?.id,
       variant: selectedVariant,
       optionalItems: selectedOptionals,
@@ -101,6 +104,8 @@ export const useOrderDialog = (navigate: any, toast: any) => {
       quantity: 1,
       unitPrice,
       price: unitPrice,
+      regularPrice: item.regularPrice,
+      discountPercentage: item.discountPercentage,
       optionalItems: [],
     };
 

@@ -17,7 +17,7 @@ type Product = {
   slug: string;
   description?: string | null;
   regularPrice: number;
-  discountPercentage?: number | null;
+  discountPercentage: number;
   isFeatured: boolean;
   isPopular: boolean;
   isOptional: boolean;
