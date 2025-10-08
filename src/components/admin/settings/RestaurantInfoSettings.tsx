@@ -1,17 +1,16 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { fetchSettings, updateSettings } from "@/services/appSettingsService";
 import { uploadLogo } from "@/services/logoUploadService";
-import { AppSettings } from "@/types/settings";
+// import { AppSettings } from "@/types/settings";
 import { RestaurantBasicInfo } from "./restaurant-info/RestaurantBasicInfo";
 import { RestaurantLogo } from "./restaurant-info/RestaurantLogo";
 import { DeliverySettings } from "./restaurant-info/DeliverySettings";
 import { OrderSettings } from "./restaurant-info/OrderSettings";
 
 export const RestaurantInfoSettings: React.FC = () => {
-  const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [settings, setSettings] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -25,16 +24,16 @@ export const RestaurantInfoSettings: React.FC = () => {
           setSettings(data);
         } else {
           // Create default settings if none exist
-          const defaultSettings: Partial<AppSettings> = {
-            restaurant_name: 'Tasty Bites',
+          const defaultSettings: Partial<any> = {
+            restaurant_name: "Tasty Bites",
             is_open: true,
-            open_time: '09:00',
-            close_time: '23:00',
+            open_time: "09:00",
+            close_time: "23:00",
             base_delivery_fee: 2.99,
             fee_per_km: 0.5,
             max_delivery_distance: 10,
             min_order_amount: 10,
-            tax_percentage: 10
+            tax_percentage: 10,
           };
           const createdSettings = await updateSettings(defaultSettings);
           if (createdSettings) {
@@ -42,8 +41,8 @@ export const RestaurantInfoSettings: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('Error loading settings:', error);
-        toast.error('Failed to load restaurant settings');
+        console.error("Error loading settings:", error);
+        toast.error("Failed to load restaurant settings");
       } finally {
         setIsLoading(false);
       }
@@ -52,23 +51,25 @@ export const RestaurantInfoSettings: React.FC = () => {
     loadSettings();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     if (!settings) return;
-    
+
     const { name, value, type } = e.target;
-    
+
     setSettings({
       ...settings,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value
+      [name]: type === "number" ? parseFloat(value) || 0 : value,
     });
   };
 
   const handleSwitchChange = (name: string) => (checked: boolean) => {
     if (!settings) return;
-    
+
     setSettings({
       ...settings,
-      [name]: checked
+      [name]: checked,
     });
   };
 
@@ -79,20 +80,20 @@ export const RestaurantInfoSettings: React.FC = () => {
     try {
       setIsUploadingLogo(true);
       const logoUrl = await uploadLogo(file);
-      
+
       const updatedSettings = await updateSettings({
         ...settings,
         logo_url: logoUrl,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
-      
+
       if (updatedSettings) {
         setSettings(updatedSettings);
-        toast.success('Logo uploaded successfully');
+        toast.success("Logo uploaded successfully");
       }
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast.error('Failed to upload logo');
+      console.error("Error uploading logo:", error);
+      toast.error("Failed to upload logo");
     } finally {
       setIsUploadingLogo(false);
     }
@@ -100,21 +101,21 @@ export const RestaurantInfoSettings: React.FC = () => {
 
   const handleSave = async () => {
     if (!settings) return;
-    
+
     try {
       setIsSaving(true);
       const updatedSettings = await updateSettings({
         ...settings,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
-      
+
       if (updatedSettings) {
         setSettings(updatedSettings);
-        toast.success('Restaurant settings saved successfully');
+        toast.success("Restaurant settings saved successfully");
       }
     } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      console.error("Error saving settings:", error);
+      toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
     }
@@ -135,45 +136,37 @@ export const RestaurantInfoSettings: React.FC = () => {
     return (
       <div className="text-center p-8">
         <div className="text-red-500 mb-4">Failed to load settings</div>
-        <Button onClick={() => window.location.reload()}>
-          Retry
-        </Button>
+        <Button onClick={() => window.location.reload()}>Retry</Button>
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <RestaurantBasicInfo 
+      <RestaurantBasicInfo
         settings={settings}
         onInputChange={handleInputChange}
         onSwitchChange={handleSwitchChange}
       />
-      
-      <RestaurantLogo 
+
+      <RestaurantLogo
         settings={settings}
         isUploadingLogo={isUploadingLogo}
         onLogoUpload={handleLogoUpload}
       />
-      
-      <DeliverySettings 
-        settings={settings}
-        onInputChange={handleInputChange}
-      />
-      
-      <OrderSettings 
-        settings={settings}
-        onInputChange={handleInputChange}
-      />
-      
+
+      <DeliverySettings settings={settings} onInputChange={handleInputChange} />
+
+      <OrderSettings settings={settings} onInputChange={handleInputChange} />
+
       {/* Save Button */}
       <div className="lg:col-span-2 flex justify-end">
-        <Button 
-          onClick={handleSave} 
+        <Button
+          onClick={handleSave}
           disabled={isSaving || isUploadingLogo}
           className="min-w-32"
         >
-          {isSaving ? 'Saving...' : 'Save All Settings'}
+          {isSaving ? "Saving..." : "Save All Settings"}
         </Button>
       </div>
     </div>

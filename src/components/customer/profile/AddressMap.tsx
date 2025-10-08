@@ -58,10 +58,12 @@ export const AddressMap: React.FC<AddressMapProps> = ({
 
       mapInstance.addListener("click", (e: google.maps.MapMouseEvent) => {
         const { latLng } = e;
-        const lat = latLng.lat();
-        const lng = latLng.lng();
-        mapMarker.setPosition({ lat, lng });
-        onLocationSelect(lat, lng);
+        if (latLng) {
+          const lat = latLng.lat();
+          const lng = latLng.lng();
+          mapMarker.setPosition({ lat, lng });
+          onLocationSelect(lat, lng);
+        }
       });
 
       setMap(mapInstance);
@@ -85,7 +87,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     return () => {
       if (map) {
         google.maps.event.clearInstanceListeners(map);
-        map = null;
+        setMap(null);
       }
     };
   }, [googleApiKey]);
@@ -104,13 +106,16 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     try {
       const results = await new Promise<google.maps.GeocoderResult[]>(
         (resolve, reject) => {
-          geocoder.geocode({ address: searchQuery }, (results, status) => {
-            if (status === "OK") {
-              resolve(results!);
-            } else {
-              reject("Geocode failed: " + status);
-            }
-          });
+          geocoder.geocode(
+            { address: searchQuery },
+            (results: any, status: any) => {
+              if (status === "OK") {
+                resolve(results!);
+              } else {
+                reject("Geocode failed: " + status);
+              }
+            },
+          );
         },
       );
 

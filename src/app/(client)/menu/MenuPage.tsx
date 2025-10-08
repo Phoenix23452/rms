@@ -5,7 +5,6 @@ import { MenuSearchBar } from "@/components/customer/menu/MenuSearchBar";
 import { MenuItemCard } from "@/components/customer/menu/MenuItemCard";
 import { OrderDialog } from "@/components/customer/menu/order-dialog/OrderDialog";
 import { useOrderDialog } from "@/hooks/customer/use-order-dialog";
-import { useProductOptions } from "@/hooks/customer/use-product-options";
 import { useCart } from "@/hooks/customer/use-cart";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 import { HeroSlider } from "@/components/customer/menu/HeroSlider";
@@ -61,7 +60,6 @@ export default function MenuPage({
   } = useOrderDialog(navigate, toast);
 
   console.log(selectedItem);
-  const { optionalItems } = useProductOptions(selectedItem);
 
   // Update cart count when order is confirmed
   useEffect(() => {

@@ -1,9 +1,14 @@
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "ready_for_pickup"
+  | "out_for_delivery"
+  | "delivered"
+  | "cancelled";
 
-import { supabase } from "@/integrations/supabase/client";
-
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready_for_pickup' | 'out_for_delivery' | 'delivered' | 'cancelled';
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
-export type PaymentMethod = 'credit_card' | 'cash' | 'wallet' | 'bank_transfer';
+export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
+export type PaymentMethod = "credit_card" | "cash" | "wallet" | "bank_transfer";
 
 export interface OrderItem {
   product_id: string;
@@ -48,282 +53,209 @@ export interface Order {
   }[];
 }
 
+interface Rider {
+  id: string;
+  name: string;
+  is_active: boolean;
+}
+
+interface OrderRider {
+  id: string;
+  order_id: string;
+  rider_id: string;
+  assigned_at: string;
+  delivered_at?: string;
+}
+
+// In-memory storage
+const orders: Order[] = [];
+const orderItems: (OrderItem & { order_id: string })[] = [];
+const orderTimelines: {
+  id: string;
+  order_id: string;
+  status: string;
+  description: string | null;
+  time: string;
+}[] = [];
+const riders: Rider[] = [
+  { id: "r1", name: "Rider One", is_active: true },
+  { id: "r2", name: "Rider Two", is_active: false },
+];
+const orderRiders: OrderRider[] = [];
+
+// Utility
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const generateId = () => Math.random().toString(36).substring(2, 10);
+const nowISO = () => new Date().toISOString();
+
 export const createOrder = async (
-  order: Omit<Order, 'id' | 'created_at' | 'updated_at' | 'placed_at' | 'order_number'>, 
-  items: Omit<OrderItem, 'id'>[]
+  order: Omit<
+    Order,
+    "id" | "created_at" | "updated_at" | "placed_at" | "order_number"
+  >,
+  items: Omit<OrderItem, "id">[],
 ): Promise<Order | null> => {
-  try {
-    // Generate order number format: ORD-YYMMDD-XXXX (XXXX is random)
-    const date = new Date();
-    const year = date.getFullYear().toString().slice(2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000);
-    const orderNumber = `ORD-${year}${month}${day}-${random}`;
-    
-    // Create the order
-    const { data: orderData, error: orderError } = await supabase
-      .from('orders')
-      .insert([{
-        ...order,
-        order_number: orderNumber,
-        placed_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
+  await delay(100); // simulate network latency
 
-    if (orderError || !orderData) {
-      throw new Error(orderError?.message || 'Failed to create order');
-    }
+  const date = new Date();
+  const year = date.getFullYear().toString().slice(2);
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const random = Math.floor(1000 + Math.random() * 9000);
+  const orderNumber = `ORD-${year}${month}${day}-${random}`;
 
-    // Create order items
-    const orderItems = items.map(item => ({
-      ...item,
-      order_id: orderData.id
-    }));
+  const id = generateId();
+  const timestamp = nowISO();
 
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems);
+  const newOrder: Order = {
+    ...order,
+    id,
+    order_number: orderNumber,
+    placed_at: timestamp,
+    created_at: timestamp,
+    updated_at: timestamp,
+    items: [],
+    timeline: [],
+  };
 
-    if (itemsError) {
-      throw new Error(itemsError.message);
-    }
+  orders.push(newOrder);
 
-    // Add initial status to timeline
-    const { error: timelineError } = await supabase
-      .from('order_timeline')
-      .insert([{
-        order_id: orderData.id,
-        status: 'pending',
-        description: 'Order received and pending confirmation'
-      }]);
+  // Add items
+  items.forEach((item) => {
+    orderItems.push({ ...item, order_id: id });
+  });
 
-    if (timelineError) {
-      throw new Error(timelineError.message);
-    }
+  // Add initial timeline event
+  const timelineEntry = {
+    id: generateId(),
+    order_id: id,
+    status: "pending",
+    description: "Order received and pending confirmation",
+    time: timestamp,
+  };
+  orderTimelines.push(timelineEntry);
 
-    // Return the complete order
-    return getOrderById(orderData.id);
-
-  } catch (error: any) {
-    console.error('Error creating order:', error);
-    throw error;
-  }
+  return getOrderById(id);
 };
 
 export const getOrderById = async (id: string): Promise<Order | null> => {
-  // Get the order
-  const { data: order, error } = await supabase
-    .from('orders')
-    .select(`
-      *,
-      delivery_address:delivery_address_id (
-        address_line,
-        city,
-        state,
-        postal_code
-      )
-    `)
-    .eq('id', id)
-    .single();
+  await delay(50);
 
-  if (error) {
-    console.error('Error fetching order:', error);
-    return null;
-  }
+  const order = orders.find((o) => o.id === id);
+  if (!order) return null;
 
-  // Get the order items
-  const { data: itemsData, error: itemsError } = await supabase
-    .from('order_items')
-    .select('*')
-    .eq('order_id', id);
+  const items = orderItems.filter((item) => item.order_id === id);
+  const timeline = orderTimelines
+    .filter((t) => t.order_id === id)
+    .sort((a, b) => a.time.localeCompare(b.time));
 
-  if (itemsError) {
-    console.error('Error fetching order items:', itemsError);
-  }
-  
-  // Convert the items to the correct type
-  const items: OrderItem[] = itemsData ? itemsData.map(item => ({
-    product_id: item.product_id || '',
-    product_name: item.product_name,
-    quantity: item.quantity,
-    unit_price: item.unit_price,
-    total_price: item.total_price,
-    options: item.options as Record<string, any> | null
-  })) : [];
-
-  // Get the order timeline
-  const { data: timeline, error: timelineError } = await supabase
-    .from('order_timeline')
-    .select('*')
-    .eq('order_id', id)
-    .order('time', { ascending: true });
-
-  if (timelineError) {
-    console.error('Error fetching order timeline:', timelineError);
-  }
+  // Just a dummy delivery address if delivery_address_id exists
+  const delivery_address = order.delivery_address_id
+    ? {
+        address_line: "123 Main St",
+        city: "Sample City",
+        state: "SC",
+        postal_code: "12345",
+      }
+    : undefined;
 
   return {
     ...order,
     items,
-    timeline: timeline || []
+    timeline,
+    delivery_address,
   };
 };
 
-export const updateOrderStatus = async (id: string, status: OrderStatus, description?: string): Promise<boolean> => {
-  try {
-    // Update order status
-    const { error: orderError } = await supabase
-      .from('orders')
-      .update({ 
-        status,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
+export const updateOrderStatus = async (
+  id: string,
+  status: OrderStatus,
+  description?: string,
+): Promise<boolean> => {
+  await delay(50);
 
-    if (orderError) {
-      throw new Error(orderError.message);
-    }
+  const orderIndex = orders.findIndex((o) => o.id === id);
+  if (orderIndex === -1) throw new Error("Order not found");
 
-    // Add status to timeline
-    const { error: timelineError } = await supabase
-      .from('order_timeline')
-      .insert([{
-        order_id: id,
-        status,
-        description: description || getDefaultStatusDescription(status)
-      }]);
+  orders[orderIndex].status = status;
+  orders[orderIndex].updated_at = nowISO();
 
-    if (timelineError) {
-      throw new Error(timelineError.message);
-    }
+  const timelineEntry = {
+    id: generateId(),
+    order_id: id,
+    status,
+    description: description || getDefaultStatusDescription(status),
+    time: nowISO(),
+  };
+  orderTimelines.push(timelineEntry);
 
-    // Auto assign rider if status is out_for_delivery and no rider is assigned
-    if (status === 'out_for_delivery') {
-      // Check if order already has a rider
-      const { data: existingRider } = await supabase
-        .from('order_riders')
-        .select('*')
-        .eq('order_id', id)
-        .maybeSingle();
-
-      if (!existingRider) {
-        // Get available riders
-        const { data: availableRiders } = await supabase
-          .from('riders')
-          .select('*')
-          .eq('is_active', true)
-          .limit(1);
-
-        if (availableRiders && availableRiders.length > 0) {
-          // Assign first available rider
-          const rider = availableRiders[0];
-          
-          await supabase
-            .from('order_riders')
-            .insert([{
-              order_id: id,
-              rider_id: rider.id,
-              assigned_at: new Date().toISOString()
-            }]);
-          
-          // Add assignment to order timeline
-          await supabase
-            .from('order_timeline')
-            .insert([{
-              order_id: id,
-              status: 'rider_assigned',
-              description: `Rider assigned automatically for delivery`
-            }]);
-        }
-      }
-    }
-
-    // Set order to complete automatically when rider marks as delivered
-    if (status === 'delivered') {
-      // Update rider entry
-      const { data: riderOrder } = await supabase
-        .from('order_riders')
-        .select('*')
-        .eq('order_id', id)
-        .maybeSingle();
-      
-      if (riderOrder) {
-        await supabase
-          .from('order_riders')
-          .update({
-            delivered_at: new Date().toISOString()
-          })
-          .eq('id', riderOrder.id);
-      }
-      
-      // Automatically update admin side to show order as completed
-      await supabase
-        .from('order_timeline')
-        .insert([{
+  if (status === "out_for_delivery") {
+    const existingRider = orderRiders.find((or) => or.order_id === id);
+    if (!existingRider) {
+      const availableRider = riders.find((r) => r.is_active);
+      if (availableRider) {
+        orderRiders.push({
+          id: generateId(),
           order_id: id,
-          status: 'completed',
-          description: 'Order was successfully delivered and completed'
-        }]);
-    }
+          rider_id: availableRider.id,
+          assigned_at: nowISO(),
+        });
 
-    return true;
-  } catch (error: any) {
-    console.error('Error updating order status:', error);
-    throw error;
+        orderTimelines.push({
+          id: generateId(),
+          order_id: id,
+          status: "rider_assigned",
+          description: "Rider assigned automatically for delivery",
+          time: nowISO(),
+        });
+      }
+    }
   }
+
+  if (status === "delivered") {
+    const riderOrder = orderRiders.find((or) => or.order_id === id);
+    if (riderOrder) {
+      riderOrder.delivered_at = nowISO();
+    }
+    orderTimelines.push({
+      id: generateId(),
+      order_id: id,
+      status: "completed",
+      description: "Order was successfully delivered and completed",
+      time: nowISO(),
+    });
+  }
+
+  return true;
 };
 
 export const getOrdersByUser = async (userId: string): Promise<Order[]> => {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('user_id', userId)
-    .order('placed_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching user orders:', error);
-    throw error;
-  }
-
-  return data || [];
+  await delay(50);
+  return orders
+    .filter((o) => o.user_id === userId)
+    .sort((a, b) => b.placed_at.localeCompare(a.placed_at));
 };
 
-export const getOrdersByStatus = async (status: OrderStatus | OrderStatus[]): Promise<Order[]> => {
-  let query = supabase
-    .from('orders')
-    .select('*');
-  
+export const getOrdersByStatus = async (
+  status: OrderStatus | OrderStatus[],
+): Promise<Order[]> => {
+  await delay(50);
+
+  let filtered: Order[];
   if (Array.isArray(status)) {
-    query = query.in('status', status);
+    filtered = orders.filter((o) => status.includes(o.status));
   } else {
-    query = query.eq('status', status);
+    filtered = orders.filter((o) => o.status === status);
   }
-  
-  const { data, error } = await query.order('placed_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching orders by status:', error);
-    throw error;
-  }
-
-  return data || [];
+  return filtered.sort((a, b) => b.placed_at.localeCompare(a.placed_at));
 };
 
 export const getRecentOrders = async (limit = 10): Promise<Order[]> => {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .order('placed_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching recent orders:', error);
-    throw error;
-  }
-
-  return data || [];
+  await delay(50);
+  const sorted = [...orders].sort((a, b) =>
+    b.placed_at.localeCompare(a.placed_at),
+  );
+  return sorted.slice(0, limit);
 };
 
 export const submitReview = async (
@@ -331,46 +263,39 @@ export const submitReview = async (
   orderId: string,
   productId?: string,
   riderId?: string,
-  rating: number = 5,
-  comment?: string
+  rating = 5,
+  comment?: string,
 ): Promise<boolean> => {
-  const { error } = await supabase
-    .from('reviews')
-    .insert([{
-      user_id: userId,
-      order_id: orderId,
-      product_id: productId,
-      rider_id: riderId,
-      rating,
-      comment
-    }]);
-
-  if (error) {
-    console.error('Error submitting review:', error);
-    throw error;
-  }
-
+  await delay(50);
+  // Dummy: just log review submission
+  console.log("Review submitted:", {
+    userId,
+    orderId,
+    productId,
+    riderId,
+    rating,
+    comment,
+  });
   return true;
 };
 
-// Helper function to get default description for status updates
 function getDefaultStatusDescription(status: OrderStatus): string {
   switch (status) {
-    case 'pending':
-      return 'Order received and pending confirmation';
-    case 'confirmed':
-      return 'Order confirmed and being prepared in kitchen';
-    case 'preparing':
-      return 'Your order is being prepared in the kitchen';
-    case 'ready_for_pickup':
-      return 'Your order is ready for pickup';
-    case 'out_for_delivery':
-      return 'Your order is on the way to you';
-    case 'delivered':
-      return 'Your order has been delivered successfully';
-    case 'cancelled':
-      return 'Order has been cancelled';
+    case "pending":
+      return "Order received and pending confirmation";
+    case "confirmed":
+      return "Order confirmed and being prepared in kitchen";
+    case "preparing":
+      return "Your order is being prepared in the kitchen";
+    case "ready_for_pickup":
+      return "Your order is ready for pickup";
+    case "out_for_delivery":
+      return "Your order is on the way to you";
+    case "delivered":
+      return "Your order has been delivered successfully";
+    case "cancelled":
+      return "Order has been cancelled";
     default:
-      return 'Order status updated';
+      return "Order status updated";
   }
 }

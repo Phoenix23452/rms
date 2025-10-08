@@ -1,18 +1,19 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppSettings } from "@/types/settings";
+// import { AppSettings } from "@/types/settings";
 
 interface OrderSettingsProps {
-  settings: AppSettings;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  settings: any;
+  onInputChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
 }
 
 export const OrderSettings: React.FC<OrderSettingsProps> = ({
   settings,
-  onInputChange
+  onInputChange,
 }) => {
   return (
     <Card>
@@ -33,7 +34,7 @@ export const OrderSettings: React.FC<OrderSettingsProps> = ({
             placeholder="10.00"
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="tax_percentage">Tax Percentage (%)</Label>
           <Input

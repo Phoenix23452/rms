@@ -1,18 +1,19 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppSettings } from "@/types/settings";
+// import { AppSettings } from "@/types/settings";
 
 interface DeliverySettingsProps {
-  settings: AppSettings;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  settings: any;
+  onInputChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
 }
 
 export const DeliverySettings: React.FC<DeliverySettingsProps> = ({
   settings,
-  onInputChange
+  onInputChange,
 }) => {
   return (
     <Card>
@@ -33,7 +34,7 @@ export const DeliverySettings: React.FC<DeliverySettingsProps> = ({
             placeholder="0.00"
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="fee_per_km">Additional Fee per KM ($)</Label>
           <Input
@@ -47,9 +48,11 @@ export const DeliverySettings: React.FC<DeliverySettingsProps> = ({
             placeholder="0.00"
           />
         </div>
-        
+
         <div className="space-y-2">
-          <Label htmlFor="max_delivery_distance">Maximum Delivery Distance (km)</Label>
+          <Label htmlFor="max_delivery_distance">
+            Maximum Delivery Distance (km)
+          </Label>
           <Input
             id="max_delivery_distance"
             name="max_delivery_distance"

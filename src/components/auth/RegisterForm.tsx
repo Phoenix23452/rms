@@ -1,38 +1,38 @@
-
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const RegisterForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
-  const navigate = useNavigate();
+  // const { register } = useAuth();
+  const navigate = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name || !email || !password) {
       toast.error("Please fill out all fields");
       return;
     }
-    
+
     if (password.length < 6) {
       toast.error("Password should be at least 6 characters");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      await register(name, email, password);
-      navigate("/");
+      // await register(name, email, password);
+      navigate.push("/");
       toast.success("Account created successfully!");
     } catch (error: any) {
       console.error("Registration error:", error);

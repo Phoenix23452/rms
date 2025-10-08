@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,11 +5,14 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { fetchWalletSettings, updateWalletSettings } from "@/services/walletSettingsService";
-import { WalletSettings as WalletSettingsType } from "@/types/settings";
+import {
+  fetchWalletSettings,
+  updateWalletSettings,
+} from "@/services/walletSettingsService";
+// import { WalletSettings as WalletSettingsType } from "@/types/settings";
 
 export const WalletSettings: React.FC = () => {
-  const [settings, setSettings] = useState<WalletSettingsType | null>(null);
+  const [settings, setSettings] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -21,8 +23,8 @@ export const WalletSettings: React.FC = () => {
         const data = await fetchWalletSettings();
         setSettings(data);
       } catch (error) {
-        console.error('Error loading wallet settings:', error);
-        toast.error('Failed to load wallet settings');
+        console.error("Error loading wallet settings:", error);
+        toast.error("Failed to load wallet settings");
       } finally {
         setIsLoading(false);
       }
@@ -33,38 +35,38 @@ export const WalletSettings: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!settings) return;
-    
+
     const { name, value, type } = e.target;
-    
+
     setSettings({
       ...settings,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value
+      [name]: type === "number" ? parseFloat(value) || 0 : value,
     });
   };
 
   const handleSwitchChange = (name: string) => (checked: boolean) => {
     if (!settings) return;
-    
+
     setSettings({
       ...settings,
-      [name]: checked
+      [name]: checked,
     });
   };
 
   const handleSave = async () => {
     if (!settings) return;
-    
+
     try {
       setIsSaving(true);
       const updatedSettings = await updateWalletSettings(settings);
-      
+
       if (updatedSettings) {
         setSettings(updatedSettings);
-        toast.success('Wallet settings saved successfully');
+        toast.success("Wallet settings saved successfully");
       }
     } catch (error) {
-      console.error('Error saving wallet settings:', error);
-      toast.error('Failed to save wallet settings');
+      console.error("Error saving wallet settings:", error);
+      toast.error("Failed to save wallet settings");
     } finally {
       setIsSaving(false);
     }
@@ -85,7 +87,9 @@ export const WalletSettings: React.FC = () => {
     return (
       <div className="text-center p-8">
         <div className="text-red-500 mb-4">No wallet settings found</div>
-        <p className="text-muted-foreground">Wallet settings need to be configured by a system administrator.</p>
+        <p className="text-muted-foreground">
+          Wallet settings need to be configured by a system administrator.
+        </p>
       </div>
     );
   }
@@ -104,16 +108,18 @@ export const WalletSettings: React.FC = () => {
               <Switch
                 id="enable_wallet"
                 checked={settings.enable_wallet || false}
-                onCheckedChange={handleSwitchChange('enable_wallet')}
+                onCheckedChange={handleSwitchChange("enable_wallet")}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
-              <Label htmlFor="enable_wallet_payment">Allow Wallet Payments</Label>
+              <Label htmlFor="enable_wallet_payment">
+                Allow Wallet Payments
+              </Label>
               <Switch
                 id="enable_wallet_payment"
                 checked={settings.enable_wallet_payment || false}
-                onCheckedChange={handleSwitchChange('enable_wallet_payment')}
+                onCheckedChange={handleSwitchChange("enable_wallet_payment")}
               />
             </div>
           </div>
@@ -121,7 +127,9 @@ export const WalletSettings: React.FC = () => {
           {/* Deposit Settings */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="min_deposit_amount">Minimum Deposit Amount ($)</Label>
+              <Label htmlFor="min_deposit_amount">
+                Minimum Deposit Amount ($)
+              </Label>
               <Input
                 id="min_deposit_amount"
                 name="min_deposit_amount"
@@ -133,9 +141,11 @@ export const WalletSettings: React.FC = () => {
                 placeholder="5.00"
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="max_deposit_amount">Maximum Deposit Amount ($)</Label>
+              <Label htmlFor="max_deposit_amount">
+                Maximum Deposit Amount ($)
+              </Label>
               <Input
                 id="max_deposit_amount"
                 name="max_deposit_amount"
@@ -147,9 +157,11 @@ export const WalletSettings: React.FC = () => {
                 placeholder="500.00"
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="deposit_processing_fee">Deposit Processing Fee ($)</Label>
+              <Label htmlFor="deposit_processing_fee">
+                Deposit Processing Fee ($)
+              </Label>
               <Input
                 id="deposit_processing_fee"
                 name="deposit_processing_fee"
@@ -165,12 +177,12 @@ export const WalletSettings: React.FC = () => {
         </div>
 
         <div className="pt-4 border-t">
-          <Button 
-            onClick={handleSave} 
+          <Button
+            onClick={handleSave}
             disabled={isSaving}
             className="w-full md:w-auto"
           >
-            {isSaving ? 'Saving...' : 'Save Wallet Settings'}
+            {isSaving ? "Saving..." : "Save Wallet Settings"}
           </Button>
         </div>
       </CardContent>

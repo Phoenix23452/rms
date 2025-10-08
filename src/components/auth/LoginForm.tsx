@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,27 +9,28 @@ export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  // const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error("Please enter both email and password");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       console.log("LoginForm: Attempting login with:", email);
-      await login(email, password);
+      // await login(email, password);
       // Success toast and navigation are handled in the login function
     } catch (error: any) {
       console.error("LoginForm error:", error);
-      const errorMessage = error.message && typeof error.message === 'string' 
-        ? error.message 
-        : "Failed to log in. Please check your credentials.";
+      const errorMessage =
+        error.message && typeof error.message === "string"
+          ? error.message
+          : "Failed to log in. Please check your credentials.";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

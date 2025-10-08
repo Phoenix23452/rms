@@ -34,7 +34,6 @@ import {
   Gift,
 } from "lucide-react";
 import { LoyaltyCard } from "@/components/customer/LoyaltyCard";
-import { useLoyalty } from "@/hooks/use-loyalty";
 // import { AddAddressDialog } from "@/components/customer/profile/AddAddressDialog";
 import { OrderDetailsDialog } from "@/components/customer/profile/OrderDetailsDialog";
 import { useRouter } from "next/navigation";
@@ -216,7 +215,7 @@ const CustomerProfilePage = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    // logout();
     navigate.push("/auth/login");
 
     toast("Logged out", {

@@ -1,8 +1,7 @@
-
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { Order } from "@/services/orderService";
+import { useRouter } from "next/navigation";
 
 interface OrderItem {
   id: string;
@@ -15,7 +14,7 @@ interface OrderItem {
   deliveryArea?: string | null;
   status: string;
   orderDate?: string;
-  
+
   // Possible real order properties
   order_number?: string;
   user_id?: string;
@@ -35,53 +34,54 @@ interface OrderItem {
 // This type allows us to accept either mock orders or real API orders
 type OrdersTableProps = {
   orders: (OrderItem | Order)[];
-}
+};
 
 const OrdersTable = ({ orders }: OrdersTableProps) => {
-  const navigate = useNavigate();
-  
+  const navigate = useRouter();
+
   const handleViewOrder = (orderId: string) => {
-    navigate(`/admin/orders/${orderId}`);
+    navigate.push(`/admin/orders/${orderId}`);
   };
 
   const getCustomerName = (order: OrderItem | Order) => {
-    if ('customerName' in order) return order.customerName || "Customer";
+    if ("customerName" in order) return order.customerName || "Customer";
     return "Customer"; // For real orders, we don't have customer name yet
   };
 
   const getCustomerId = (order: OrderItem | Order) => {
-    if ('customerId' in order) return order.customerId;
-    if ('user_id' in order) return order.user_id;
+    if ("customerId" in order) return order.customerId;
+    if ("user_id" in order) return order.user_id;
     return "N/A";
   };
 
   const getOrderType = (order: OrderItem | Order) => {
-    if ('orderType' in order) return order.orderType;
-    if ('delivery_option' in order) return order.delivery_option;
+    if ("orderType" in order) return order.orderType;
+    if ("delivery_option" in order) return order.delivery_option;
     return "N/A";
   };
 
   const getPaymentStatus = (order: OrderItem | Order) => {
-    if ('paymentStatus' in order) return order.paymentStatus;
-    if ('payment_status' in order) return order.payment_status;
+    if ("paymentStatus" in order) return order.paymentStatus;
+    if ("payment_status" in order) return order.payment_status;
     return "N/A";
   };
 
   const getPaymentMethod = (order: OrderItem | Order) => {
-    if ('paymentMethod' in order) return order.paymentMethod;
-    if ('payment_method' in order) return order.payment_method;
+    if ("paymentMethod" in order) return order.paymentMethod;
+    if ("payment_method" in order) return order.payment_method;
     return "N/A";
   };
 
   const getTotalAmount = (order: OrderItem | Order) => {
-    if ('totalAmount' in order) return order.totalAmount;
-    if ('total_amount' in order) return order.total_amount || 0;
+    if ("totalAmount" in order) return order.totalAmount;
+    if ("total_amount" in order) return order.total_amount || 0;
     return 0;
   };
 
   const getDeliveryArea = (order: OrderItem | Order) => {
-    if ('deliveryArea' in order) return order.deliveryArea;
-    if ('delivery_address' in order && order.delivery_address?.city) return order.delivery_address.city;
+    if ("deliveryArea" in order) return order.deliveryArea;
+    if ("delivery_address" in order && order.delivery_address?.city)
+      return order.delivery_address.city;
     return "-";
   };
 
@@ -103,25 +103,38 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
         <tbody>
           {orders.length > 0 ? (
             orders.map((order) => (
-              <tr 
-                key={order.id} 
+              <tr
+                key={order.id}
                 className="border-b border-border hover:bg-muted/50 cursor-pointer"
                 onClick={() => handleViewOrder(order.id)}
               >
-                <td className="py-3 px-2">{('order_number' in order) ? order.order_number : order.id}</td>
+                <td className="py-3 px-2">
+                  {"order_number" in order ? order.order_number : order.id}
+                </td>
                 <td className="py-3 px-2">
                   <div>
                     <div className="font-medium">{getCustomerName(order)}</div>
-                    <div className="text-sm text-muted-foreground">{getCustomerId(order)}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getCustomerId(order)}
+                    </div>
                   </div>
                 </td>
                 <td className="py-3 px-2">{getOrderType(order)}</td>
                 <td className="py-3 px-2">
                   <div>
-                    <div className={getPaymentStatus(order).toLowerCase() === "completed" || getPaymentStatus(order) === "Paid" ? "text-green-600" : "text-red-600"}>
+                    <div
+                      className={
+                        getPaymentStatus(order)?.toLowerCase() ===
+                          "completed" || getPaymentStatus(order) === "Paid"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
                       {getPaymentStatus(order)}
                     </div>
-                    <div className="text-sm text-muted-foreground">{getPaymentMethod(order)}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getPaymentMethod(order)}
+                    </div>
                   </div>
                 </td>
                 <td className="py-3 px-2">{getDeliveryArea(order)}</td>
@@ -132,8 +145,8 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
                   ${getTotalAmount(order).toFixed(2)}
                 </td>
                 <td className="py-3 px-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -147,7 +160,10 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
             ))
           ) : (
             <tr>
-              <td colSpan={8} className="py-6 text-center text-muted-foreground">
+              <td
+                colSpan={8}
+                className="py-6 text-center text-muted-foreground"
+              >
                 No orders found matching your criteria
               </td>
             </tr>

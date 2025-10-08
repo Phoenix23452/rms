@@ -1,55 +1,73 @@
+// Dummy types for restaurant locations
+export interface RestaurantLocation {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  phone?: string;
+  created_at: string;
+  updated_at: string;
+}
 
-import { supabase } from "@/integrations/supabase/client";
-import { RestaurantLocation, NewRestaurantLocation } from "@/types/settings";
+export interface NewRestaurantLocation {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  phone?: string;
+}
 
-export const fetchRestaurantLocations = async (): Promise<RestaurantLocation[]> => {
-  const { data, error } = await supabase
-    .from('restaurant_locations')
-    .select('*')
-    .order('created_at', { ascending: false });
+// In-memory dummy data store
+let restaurantLocations: RestaurantLocation[] = [];
 
-  if (error) {
-    console.error('Error fetching restaurant locations:', error);
-    throw error;
-  }
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const generateId = () => Math.random().toString(36).substring(2, 10);
+const nowISO = () => new Date().toISOString();
 
-  return data || [];
+export const fetchRestaurantLocations = async (): Promise<
+  RestaurantLocation[]
+> => {
+  await delay(50);
+  return [...restaurantLocations].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at),
+  );
 };
 
-export const updateRestaurantLocation = async (location: Partial<RestaurantLocation>): Promise<RestaurantLocation | null> => {
-  const { data, error } = await supabase
-    .from('restaurant_locations')
-    .update({
-      ...location,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', location.id)
-    .select()
-    .single();
+export const updateRestaurantLocation = async (
+  location: Partial<RestaurantLocation>,
+): Promise<RestaurantLocation | null> => {
+  await delay(50);
 
-  if (error) {
-    console.error('Error updating restaurant location:', error);
-    throw error;
-  }
+  if (!location.id) throw new Error("Location ID is required");
 
-  return data;
+  const index = restaurantLocations.findIndex((loc) => loc.id === location.id);
+  if (index === -1) return null;
+
+  restaurantLocations[index] = {
+    ...restaurantLocations[index],
+    ...location,
+    updated_at: nowISO(),
+  };
+
+  return restaurantLocations[index];
 };
 
-export const createRestaurantLocation = async (location: NewRestaurantLocation): Promise<RestaurantLocation> => {
-  const { data, error } = await supabase
-    .from('restaurant_locations')
-    .insert([{
-      ...location,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }])
-    .select()
-    .single();
+export const createRestaurantLocation = async (
+  location: NewRestaurantLocation,
+): Promise<RestaurantLocation> => {
+  await delay(50);
 
-  if (error) {
-    console.error('Error creating restaurant location:', error);
-    throw error;
-  }
+  const newLocation: RestaurantLocation = {
+    ...location,
+    id: generateId(),
+    created_at: nowISO(),
+    updated_at: nowISO(),
+  };
 
-  return data;
+  restaurantLocations.push(newLocation);
+
+  return newLocation;
 };

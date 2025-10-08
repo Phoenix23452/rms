@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+// import { supabase } from "@/integrations/supabase/client";
 
 interface FooterData {
   about_text: string;
@@ -23,11 +22,12 @@ interface FooterData {
 }
 
 const defaultFooterData: FooterData = {
-  about_text: "Experience authentic flavors crafted with passion. Our restaurant brings you carefully selected ingredients transformed into memorable culinary experiences.",
+  about_text:
+    "Experience authentic flavors crafted with passion. Our restaurant brings you carefully selected ingredients transformed into memorable culinary experiences.",
   social_media: {
     facebook: "#",
     twitter: "#",
-    instagram: "#"
+    instagram: "#",
   },
   quick_links: [
     { href: "/", label: "Home" },
@@ -36,8 +36,8 @@ const defaultFooterData: FooterData = {
     { href: "/about", label: "About Us" },
     { href: "/contact", label: "Contact" },
     { href: "/profile", label: "My Account" },
-    { href: "/cart", label: "Cart" }
-  ]
+    { href: "/cart", label: "Cart" },
+  ],
 };
 
 export const FooterSettings: React.FC = () => {
@@ -47,16 +47,17 @@ export const FooterSettings: React.FC = () => {
   const [newLink, setNewLink] = useState({ href: "", label: "" });
   const [settingsId, setSettingsId] = useState<string | null>(null);
 
+  let supabase;
   useEffect(() => {
     const fetchFooterData = async () => {
       try {
         setIsLoading(true);
         // Use any type to bypass TypeScript validation since footer_data exists in DB but not in types
         const { data, error } = await (supabase as any)
-          .from('settings')
-          .select('id, footer_data')
+          .from("settings")
+          .select("id, footer_data")
           .single();
-        
+
         if (error) {
           console.error("Error fetching footer data:", error);
           return;
@@ -79,20 +80,20 @@ export const FooterSettings: React.FC = () => {
   }, []);
 
   const handleAboutTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFooterData(prev => ({ ...prev, about_text: e.target.value }));
+    setFooterData((prev) => ({ ...prev, about_text: e.target.value }));
   };
 
   const handleSocialMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFooterData(prev => ({
+    setFooterData((prev) => ({
       ...prev,
-      social_media: { ...prev.social_media, [name]: value }
+      social_media: { ...prev.social_media, [name]: value },
     }));
   };
 
   const handleNewLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewLink(prev => ({ ...prev, [name]: value }));
+    setNewLink((prev) => ({ ...prev, [name]: value }));
   };
 
   const addQuickLink = () => {
@@ -101,18 +102,18 @@ export const FooterSettings: React.FC = () => {
       return;
     }
 
-    setFooterData(prev => ({
+    setFooterData((prev) => ({
       ...prev,
-      quick_links: [...prev.quick_links, { ...newLink }]
+      quick_links: [...prev.quick_links, { ...newLink }],
     }));
 
     setNewLink({ href: "", label: "" });
   };
 
   const removeQuickLink = (index: number) => {
-    setFooterData(prev => ({
+    setFooterData((prev) => ({
       ...prev,
-      quick_links: prev.quick_links.filter((_, i) => i !== index)
+      quick_links: prev.quick_links.filter((_, i) => i !== index),
     }));
   };
 
@@ -121,20 +122,20 @@ export const FooterSettings: React.FC = () => {
       toast.error("Settings not found");
       return;
     }
-    
+
     try {
       setIsSaving(true);
-      
+
       // Use any type to bypass TypeScript validation
       const { error } = await (supabase as any)
-        .from('settings')
+        .from("settings")
         .update({ footer_data: footerData })
-        .eq('id', settingsId);
-      
+        .eq("id", settingsId);
+
       if (error) {
         throw error;
       }
-      
+
       toast.success("Footer settings saved successfully");
     } catch (error) {
       console.error("Error saving footer data:", error);
@@ -161,7 +162,7 @@ export const FooterSettings: React.FC = () => {
               <TabsTrigger value="social">Social Media</TabsTrigger>
               <TabsTrigger value="links">Quick Links</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="about" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="about_text">About Text</Label>
@@ -173,7 +174,7 @@ export const FooterSettings: React.FC = () => {
                 />
               </div>
             </TabsContent>
-            
+
             <TabsContent value="social" className="space-y-4">
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -185,7 +186,7 @@ export const FooterSettings: React.FC = () => {
                     onChange={handleSocialMediaChange}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="twitter">Twitter URL</Label>
                   <Input
@@ -195,7 +196,7 @@ export const FooterSettings: React.FC = () => {
                     onChange={handleSocialMediaChange}
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="instagram">Instagram URL</Label>
                   <Input
@@ -207,15 +208,20 @@ export const FooterSettings: React.FC = () => {
                 </div>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="links" className="space-y-4">
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   {footerData.quick_links.map((link, index) => (
-                    <div key={index} className="p-2 border rounded-md flex justify-between items-center">
+                    <div
+                      key={index}
+                      className="p-2 border rounded-md flex justify-between items-center"
+                    >
                       <div>
                         <p className="font-medium">{link.label}</p>
-                        <p className="text-sm text-muted-foreground">{link.href}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {link.href}
+                        </p>
                       </div>
                       <Button
                         variant="ghost"
@@ -227,12 +233,16 @@ export const FooterSettings: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-2">Add New Quick Link</h4>
+                  <h4 className="text-sm font-medium mb-2">
+                    Add New Quick Link
+                  </h4>
                   <div className="grid grid-cols-2 gap-3 mb-2">
                     <div className="space-y-1">
-                      <Label htmlFor="label" className="text-xs">Link Label</Label>
+                      <Label htmlFor="label" className="text-xs">
+                        Link Label
+                      </Label>
                       <Input
                         id="label"
                         name="label"
@@ -242,7 +252,9 @@ export const FooterSettings: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="href" className="text-xs">Link URL</Label>
+                      <Label htmlFor="href" className="text-xs">
+                        Link URL
+                      </Label>
                       <Input
                         id="href"
                         name="href"
@@ -252,22 +264,16 @@ export const FooterSettings: React.FC = () => {
                       />
                     </div>
                   </div>
-                  <Button 
-                    onClick={addQuickLink} 
-                    size="sm"
-                  >
+                  <Button onClick={addQuickLink} size="sm">
                     Add Link
                   </Button>
                 </div>
               </div>
             </TabsContent>
           </Tabs>
-          
+
           <div className="mt-6 flex justify-end">
-            <Button
-              onClick={saveFooterData}
-              disabled={isSaving}
-            >
+            <Button onClick={saveFooterData} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save Footer Settings"}
             </Button>
           </div>

@@ -1,12 +1,11 @@
-
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppSettings } from "@/types/settings";
+// import { AppSettings } from "@/types/settings";
 
 interface RestaurantLogoProps {
-  settings: AppSettings;
+  settings: any;
   isUploadingLogo: boolean;
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -14,7 +13,7 @@ interface RestaurantLogoProps {
 export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
   settings,
   isUploadingLogo,
-  onLogoUpload
+  onLogoUpload,
 }) => {
   return (
     <Card>
@@ -24,9 +23,9 @@ export const RestaurantLogo: React.FC<RestaurantLogoProps> = ({
       <CardContent className="space-y-4">
         <div className="aspect-square w-32 h-32 bg-muted rounded-md overflow-hidden flex items-center justify-center mx-auto mb-4">
           {settings.logo_url ? (
-            <img 
-              src={settings.logo_url} 
-              alt="Restaurant Logo" 
+            <img
+              src={settings.logo_url}
+              alt="Restaurant Logo"
               className="w-full h-full object-cover"
             />
           ) : (

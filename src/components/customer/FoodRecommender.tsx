@@ -22,7 +22,7 @@ import {
   Star,
   Coffee,
 } from "lucide-react";
-import { Collapse } from "@/components/ui/collapse";
+// import { Collapse } from "@/components/ui/collapse";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 
@@ -164,283 +164,287 @@ const FoodRecommender: React.FC = () => {
           Let us suggest the perfect meal based on your preferences
         </CardDescription>
       </CardHeader>
-
-      <Collapse isOpen={isOpen}>
-        <CardContent className="pt-4">
-          {!submitted ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="peopleCount">How many people are dining?</Label>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem
-                      id="people-1"
-                      value="1"
-                      checked={peopleCount === "1"}
-                      onClick={() => setPeopleCount("1")}
-                    />
-                    <Label
-                      htmlFor="people-1"
-                      className="flex items-center gap-1"
-                    >
-                      <User className="h-4 w-4" /> Just me
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem
-                      id="people-2"
-                      value="2"
-                      checked={peopleCount === "2"}
-                      onClick={() => setPeopleCount("2")}
-                    />
-                    <Label
-                      htmlFor="people-2"
-                      className="flex items-center gap-1"
-                    >
-                      <User className="h-4 w-4" /> Couple
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem
-                      id="people-group"
-                      value="4"
-                      checked={peopleCount === "4"}
-                      onClick={() => setPeopleCount("4")}
-                    />
-                    <Label
-                      htmlFor="people-group"
-                      className="flex items-center gap-1"
-                    >
-                      <Users className="h-4 w-4" /> Group
-                    </Label>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Label>What's the occasion?</Label>
-                <RadioGroup
-                  value={occasion}
-                  onValueChange={(value) => setOccasion(value as Occasion)}
-                  className="flex flex-wrap gap-2"
-                >
-                  <div className="flex items-center">
-                    <RadioGroupItem
-                      value="casual"
-                      id="casual"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="casual"
-                      className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                    >
-                      Casual Meal
-                    </Label>
-                  </div>
-                  <div className="flex items-center">
-                    <RadioGroupItem
-                      value="celebration"
-                      id="celebration"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="celebration"
-                      className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                    >
-                      Celebration
-                    </Label>
-                  </div>
-                  <div className="flex items-center">
-                    <RadioGroupItem
-                      value="date"
-                      id="date"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="date"
-                      className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                    >
-                      Date Night
-                    </Label>
-                  </div>
-                  <div className="flex items-center">
-                    <RadioGroupItem
-                      value="business"
-                      id="business"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="business"
-                      className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
-                    >
-                      Business
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Label>Flavor preferences (optional)</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pref-spicy"
-                      checked={preferences.includes("spicy")}
-                      onCheckedChange={(checked) =>
-                        handlePreferenceChange("spicy", !!checked)
-                      }
-                    />
-                    <Label htmlFor="pref-spicy">Spicy</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pref-sweet"
-                      checked={preferences.includes("sweet")}
-                      onCheckedChange={(checked) =>
-                        handlePreferenceChange("sweet", !!checked)
-                      }
-                    />
-                    <Label htmlFor="pref-sweet">Sweet</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pref-savory"
-                      checked={preferences.includes("savory")}
-                      onCheckedChange={(checked) =>
-                        handlePreferenceChange("savory", !!checked)
-                      }
-                    />
-                    <Label htmlFor="pref-savory">Savory</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pref-healthy"
-                      checked={preferences.includes("healthy")}
-                      onCheckedChange={(checked) =>
-                        handlePreferenceChange("healthy", !!checked)
-                      }
-                    />
-                    <Label htmlFor="pref-healthy">Healthy</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pref-comfort"
-                      checked={preferences.includes("comfort")}
-                      onCheckedChange={(checked) =>
-                        handlePreferenceChange("comfort", !!checked)
-                      }
-                    />
-                    <Label htmlFor="pref-comfort">Comfort Food</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="pref-vegetarian"
-                      checked={preferences.includes("vegetarian")}
-                      onCheckedChange={(checked) =>
-                        handlePreferenceChange("vegetarian", !!checked)
-                      }
-                    />
-                    <Label htmlFor="pref-vegetarian">Vegetarian</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <Button type="submit" className="w-full">
-                  Get Recommendations
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium text-lg">Our Recommendations</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSubmitted(false)}
-                >
-                  Change Preferences
-                </Button>
-              </div>
-
-              {filteredRecommendations.length > 0 ? (
-                <div className="space-y-4">
-                  {filteredRecommendations.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex gap-4 border-b pb-4 last:border-0"
-                    >
-                      <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium">{item.name}</h4>
-                          <span className="font-semibold text-primary">
-                            ${item.price.toFixed(2)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {item.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1 text-sm">
-                            <div className="flex items-center">
-                              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                              <span className="ml-1">{item.rating}</span>
-                            </div>
-                            <Badge variant="outline" className="text-xs ml-2">
-                              {item.serving === "sharing"
-                                ? "Great for sharing"
-                                : "Individual"}
-                            </Badge>
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={() => handleAddToCart(item)}
-                          >
-                            View Item
-                          </Button>
-                        </div>
-                      </div>
+      {isOpen && (
+        <Card // isOpen={isOpen}
+        >
+          <CardContent className="pt-4">
+            {!submitted ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="peopleCount">
+                    How many people are dining?
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem
+                        id="people-1"
+                        value="1"
+                        checked={peopleCount === "1"}
+                        onClick={() => setPeopleCount("1")}
+                      />
+                      <Label
+                        htmlFor="people-1"
+                        className="flex items-center gap-1"
+                      >
+                        <User className="h-4 w-4" /> Just me
+                      </Label>
                     </div>
-                  ))}
-
-                  <div className="pt-2">
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => navigate("/menu")}
-                    >
-                      View Full Menu
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem
+                        id="people-2"
+                        value="2"
+                        checked={peopleCount === "2"}
+                        onClick={() => setPeopleCount("2")}
+                      />
+                      <Label
+                        htmlFor="people-2"
+                        className="flex items-center gap-1"
+                      >
+                        <User className="h-4 w-4" /> Couple
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem
+                        id="people-group"
+                        value="4"
+                        checked={peopleCount === "4"}
+                        onClick={() => setPeopleCount("4")}
+                      />
+                      <Label
+                        htmlFor="people-group"
+                        className="flex items-center gap-1"
+                      >
+                        <Users className="h-4 w-4" /> Group
+                      </Label>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Coffee className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                  <h4 className="font-medium">No perfect matches found</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    We couldn't find exact matches for your preferences
-                  </p>
-                  <Button onClick={() => setSubmitted(false)}>
-                    Try Different Preferences
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>What's the occasion?</Label>
+                  <RadioGroup
+                    value={occasion}
+                    onValueChange={(value) => setOccasion(value as Occasion)}
+                    className="flex flex-wrap gap-2"
+                  >
+                    <div className="flex items-center">
+                      <RadioGroupItem
+                        value="casual"
+                        id="casual"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="casual"
+                        className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
+                      >
+                        Casual Meal
+                      </Label>
+                    </div>
+                    <div className="flex items-center">
+                      <RadioGroupItem
+                        value="celebration"
+                        id="celebration"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="celebration"
+                        className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
+                      >
+                        Celebration
+                      </Label>
+                    </div>
+                    <div className="flex items-center">
+                      <RadioGroupItem
+                        value="date"
+                        id="date"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="date"
+                        className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
+                      >
+                        Date Night
+                      </Label>
+                    </div>
+                    <div className="flex items-center">
+                      <RadioGroupItem
+                        value="business"
+                        id="business"
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor="business"
+                        className="px-3 py-1.5 border rounded-full cursor-pointer peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary"
+                      >
+                        Business
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>Flavor preferences (optional)</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pref-spicy"
+                        checked={preferences.includes("spicy")}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("spicy", !!checked)
+                        }
+                      />
+                      <Label htmlFor="pref-spicy">Spicy</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pref-sweet"
+                        checked={preferences.includes("sweet")}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("sweet", !!checked)
+                        }
+                      />
+                      <Label htmlFor="pref-sweet">Sweet</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pref-savory"
+                        checked={preferences.includes("savory")}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("savory", !!checked)
+                        }
+                      />
+                      <Label htmlFor="pref-savory">Savory</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pref-healthy"
+                        checked={preferences.includes("healthy")}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("healthy", !!checked)
+                        }
+                      />
+                      <Label htmlFor="pref-healthy">Healthy</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pref-comfort"
+                        checked={preferences.includes("comfort")}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("comfort", !!checked)
+                        }
+                      />
+                      <Label htmlFor="pref-comfort">Comfort Food</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pref-vegetarian"
+                        checked={preferences.includes("vegetarian")}
+                        onCheckedChange={(checked) =>
+                          handlePreferenceChange("vegetarian", !!checked)
+                        }
+                      />
+                      <Label htmlFor="pref-vegetarian">Vegetarian</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button type="submit" className="w-full">
+                    Get Recommendations
                   </Button>
                 </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Collapse>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-lg">Our Recommendations</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSubmitted(false)}
+                  >
+                    Change Preferences
+                  </Button>
+                </div>
+
+                {filteredRecommendations.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredRecommendations.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex gap-4 border-b pb-4 last:border-0"
+                      >
+                        <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">{item.name}</h4>
+                            <span className="font-semibold text-primary">
+                              ${item.price.toFixed(2)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {item.description}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1 text-sm">
+                              <div className="flex items-center">
+                                <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                                <span className="ml-1">{item.rating}</span>
+                              </div>
+                              <Badge variant="outline" className="text-xs ml-2">
+                                {item.serving === "sharing"
+                                  ? "Great for sharing"
+                                  : "Individual"}
+                              </Badge>
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddToCart(item)}
+                            >
+                              View Item
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="pt-2">
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => navigate.push("/menu")}
+                      >
+                        View Full Menu
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Coffee className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                    <h4 className="font-medium">No perfect matches found</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      We couldn't find exact matches for your preferences
+                    </p>
+                    <Button onClick={() => setSubmitted(false)}>
+                      Try Different Preferences
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </Card>
   );
 };

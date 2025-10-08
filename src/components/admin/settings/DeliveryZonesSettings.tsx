@@ -4,14 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { fetchDeliveryZones, updateDeliveryZone, createDeliveryZone } from "@/services/deliveryZonesService";
-import { DeliveryZone, NewDeliveryZone } from "@/types/settings";
+import {
+  fetchDeliveryZones,
+  updateDeliveryZone,
+  createDeliveryZone,
+} from "@/services/deliveryZonesService";
+// import { DeliveryZone, NewDeliveryZone } from "@/types/settings";
 import { Trash2, Plus } from "lucide-react";
 
 export const DeliveryZonesSettings: React.FC = () => {
-  const [zones, setZones] = useState<DeliveryZone[]>([]);
+  const [zones, setZones] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newZone, setNewZone] = useState<NewDeliveryZone>({ name: '', fee: 0 });
+  const [newZone, setNewZone] = useState<any>({ name: "", fee: 0 });
 
   useEffect(() => {
     const loadZones = async () => {
@@ -20,8 +24,8 @@ export const DeliveryZonesSettings: React.FC = () => {
         const data = await fetchDeliveryZones();
         setZones(data);
       } catch (error) {
-        console.error('Error loading delivery zones:', error);
-        toast.error('Failed to load delivery zones');
+        console.error("Error loading delivery zones:", error);
+        toast.error("Failed to load delivery zones");
       } finally {
         setIsLoading(false);
       }
@@ -30,33 +34,33 @@ export const DeliveryZonesSettings: React.FC = () => {
     loadZones();
   }, []);
 
-  const handleZoneUpdate = async (zone: DeliveryZone) => {
+  const handleZoneUpdate = async (zone: any) => {
     try {
       const updatedZone = await updateDeliveryZone(zone);
       if (updatedZone) {
-        setZones(zones.map(z => z.id === zone.id ? updatedZone : z));
-        toast.success('Delivery zone updated successfully');
+        setZones(zones.map((z) => (z.id === zone.id ? updatedZone : z)));
+        toast.success("Delivery zone updated successfully");
       }
     } catch (error) {
-      console.error('Error updating delivery zone:', error);
-      toast.error('Failed to update delivery zone');
+      console.error("Error updating delivery zone:", error);
+      toast.error("Failed to update delivery zone");
     }
   };
 
   const handleAddZone = async () => {
     if (!newZone.name || newZone.fee < 0) {
-      toast.error('Please enter valid zone name and fee');
+      toast.error("Please enter valid zone name and fee");
       return;
     }
 
     try {
       const createdZone = await createDeliveryZone(newZone);
       setZones([...zones, createdZone]);
-      setNewZone({ name: '', fee: 0 });
-      toast.success('Delivery zone added successfully');
+      setNewZone({ name: "", fee: 0 });
+      toast.success("Delivery zone added successfully");
     } catch (error) {
-      console.error('Error creating delivery zone:', error);
-      toast.error('Failed to add delivery zone');
+      console.error("Error creating delivery zone:", error);
+      toast.error("Failed to add delivery zone");
     }
   };
 
@@ -89,7 +93,11 @@ export const DeliveryZonesSettings: React.FC = () => {
                       value={zone.name}
                       onChange={(e) => {
                         const updatedZone = { ...zone, name: e.target.value };
-                        setZones(zones.map(z => z.id === zone.id ? updatedZone : z));
+                        setZones(
+                          zones.map((z) =>
+                            z.id === zone.id ? updatedZone : z,
+                          ),
+                        );
                       }}
                     />
                   </div>
@@ -101,8 +109,15 @@ export const DeliveryZonesSettings: React.FC = () => {
                       step="0.01"
                       value={zone.fee}
                       onChange={(e) => {
-                        const updatedZone = { ...zone, fee: parseFloat(e.target.value) || 0 };
-                        setZones(zones.map(z => z.id === zone.id ? updatedZone : z));
+                        const updatedZone = {
+                          ...zone,
+                          fee: parseFloat(e.target.value) || 0,
+                        };
+                        setZones(
+                          zones.map((z) =>
+                            z.id === zone.id ? updatedZone : z,
+                          ),
+                        );
                       }}
                     />
                   </div>
@@ -125,7 +140,9 @@ export const DeliveryZonesSettings: React.FC = () => {
                 <Label>Zone Name</Label>
                 <Input
                   value={newZone.name}
-                  onChange={(e) => setNewZone({ ...newZone, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewZone({ ...newZone, name: e.target.value })
+                  }
                   placeholder="e.g., Downtown, Suburb Area"
                 />
               </div>
@@ -136,7 +153,12 @@ export const DeliveryZonesSettings: React.FC = () => {
                   min="0"
                   step="0.01"
                   value={newZone.fee}
-                  onChange={(e) => setNewZone({ ...newZone, fee: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setNewZone({
+                      ...newZone,
+                      fee: parseFloat(e.target.value) || 0,
+                    })
+                  }
                   placeholder="5.00"
                 />
               </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-// import { supabase } from "@/integrations/supabase/client";
 
 export interface Review {
   id: string;
@@ -23,54 +22,17 @@ export const useReviews = () => {
     const fetchReviews = async () => {
       try {
         setLoading(true);
-        // Fetch reviews joined with profiles
-        // const { data, error } = await supabase
-        //   .from('reviews')
-        //   .select(`
-        //     id,
-        //     user_id,
-        //     rating,
-        //     comment,
-        //     created_at,
-        //     profiles:user_id (first_name, last_name, email)
-        //   `)
-        //   .order('created_at', { ascending: false })
-        //   .limit(5);
 
-        if (error) throw error;
-        setReviews(getMockReviews());
+        // Fake delay to simulate API call
+        await new Promise((res) => setTimeout(res, 500));
 
-        // Properly format the reviews with user information
-        const formattedReviews: Review[] = reviews.map((review) => {
-          // Safely extract user data from profiles
-          let userData = null;
-          // Check if profiles exists before accessing its properties
-          if (review.profiles && typeof review.profiles === "object") {
-            // Now TypeScript knows review.profiles is not null
-            const profiles = review.profiles as any;
-            userData = {
-              first_name: profiles?.first_name ?? undefined,
-              last_name: profiles?.last_name ?? undefined,
-              email: profiles?.email ?? undefined,
-            };
-          }
-
-          return {
-            id: review.id,
-            user_id: review.user_id,
-            rating: review.rating,
-            comment: review.comment,
-            created_at: review.created_at,
-            user: userData,
-          };
-        });
-
-        setReviews(formattedReviews);
+        // Directly use mock data
+        const mockData = getMockReviews();
+        setReviews(mockData);
       } catch (err) {
         console.error("Error fetching reviews:", err);
         setError("Failed to load reviews");
-        // Fall back to mock reviews if there's an error
-        setReviews(getMockReviews());
+        setReviews(getMockReviews()); // fallback
       } finally {
         setLoading(false);
       }

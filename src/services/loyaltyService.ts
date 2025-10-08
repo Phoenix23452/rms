@@ -1,6 +1,3 @@
-
-import { supabase } from "@/integrations/supabase/client";
-
 export interface LoyaltyPoints {
   id: string;
   user_id: string;
@@ -14,110 +11,107 @@ export interface LoyaltyTransaction {
   id: string;
   user_id: string;
   points: number;
-  type: 'earn' | 'redeem' | 'expire' | 'bonus';
+  type: "earn" | "redeem" | "expire" | "bonus";
   description: string | null;
   order_id: string | null;
   created_at: string;
 }
 
+// Mock database
+let mockLoyaltyPoints: LoyaltyPoints = {
+  id: "lp1",
+  user_id: "user1",
+  points: 120,
+  lifetime_points: 300,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+let mockLoyaltyTransactions: LoyaltyTransaction[] = [
+  {
+    id: "lt1",
+    user_id: "user1",
+    points: 50,
+    type: "earn",
+    description: "Points earned for order #1234",
+    order_id: "order1234",
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "lt2",
+    user_id: "user1",
+    points: -30,
+    type: "redeem",
+    description: "Points redeemed for reward",
+    order_id: null,
+    created_at: new Date(Date.now() - 43200000).toISOString(),
+  },
+];
+
+// Simulate getting current logged-in user ID (dummy)
+const getCurrentUserId = () => "user1";
+
 /**
  * Get loyalty points for the current logged-in user
  */
 export const getUserLoyaltyPoints = async (): Promise<LoyaltyPoints | null> => {
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) return null;
-  
-  const { data, error } = await supabase
-    .from('loyalty_points')
-    .select('*')
-    .eq('user_id', user.user.id)
-    .single();
-
-  if (error) {
-    console.error('Error fetching loyalty points:', error);
-    return null;
+  await new Promise((r) => setTimeout(r, 300)); // simulate network delay
+  const userId = getCurrentUserId();
+  if (mockLoyaltyPoints.user_id === userId) {
+    return mockLoyaltyPoints;
   }
-
-  return data;
+  return null;
 };
 
 /**
  * Get loyalty transactions for the current logged-in user
  */
-export const getUserLoyaltyTransactions = async (limit = 10): Promise<LoyaltyTransaction[]> => {
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) return [];
-  
-  const { data, error } = await supabase
-    .from('loyalty_transactions')
-    .select('*')
-    .eq('user_id', user.user.id)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching loyalty transactions:', error);
-    return [];
-  }
-
-  // Type assertion to ensure the data matches our interface
-  return (data || []) as LoyaltyTransaction[];
+export const getUserLoyaltyTransactions = async (
+  limit = 10,
+): Promise<LoyaltyTransaction[]> => {
+  await new Promise((r) => setTimeout(r, 300)); // simulate network delay
+  const userId = getCurrentUserId();
+  return mockLoyaltyTransactions
+    .filter((tx) => tx.user_id === userId)
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    )
+    .slice(0, limit);
 };
 
 /**
  * Add loyalty points for a purchase
- * This would typically be called server-side
  */
 export const addLoyaltyPointsForPurchase = async (
-  userId: string, 
-  orderId: string, 
-  amount: number, 
-  pointsToAward: number
+  userId: string,
+  orderId: string,
+  amount: number,
+  pointsToAward: number,
 ): Promise<boolean> => {
+  await new Promise((r) => setTimeout(r, 300)); // simulate network delay
   try {
-    // First get the current points
-    const { data: currentPointsData } = await supabase
-      .from('loyalty_points')
-      .select('points, lifetime_points')
-      .eq('user_id', userId)
-      .single();
-    
-    if (!currentPointsData) {
-      console.error('User loyalty points not found');
-      return false;
-    }
+    if (mockLoyaltyPoints.user_id !== userId) return false;
 
-    // 1. Insert the transaction
-    const { error: transactionError } = await supabase
-      .from('loyalty_transactions')
-      .insert([{
-        user_id: userId,
-        points: pointsToAward,
-        type: 'earn',
-        description: `Points earned for order #${orderId.slice(0, 8)} ($${amount.toFixed(2)})`,
-        order_id: orderId
-      }]);
+    // Insert transaction
+    const newTransaction: LoyaltyTransaction = {
+      id: `lt${Date.now()}`,
+      user_id: userId,
+      points: pointsToAward,
+      type: "earn",
+      description: `Points earned for order #${orderId.slice(0, 8)} ($${amount.toFixed(2)})`,
+      order_id: orderId,
+      created_at: new Date().toISOString(),
+    };
+    mockLoyaltyTransactions.unshift(newTransaction);
 
-    if (transactionError) throw transactionError;
-
-    // 2. Update user's points balance with calculated values
-    const newPoints = currentPointsData.points + pointsToAward;
-    const newLifetimePoints = currentPointsData.lifetime_points + pointsToAward;
-    
-    const { error: pointsError } = await supabase
-      .from('loyalty_points')
-      .update({
-        points: newPoints,
-        lifetime_points: newLifetimePoints,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId);
-
-    if (pointsError) throw pointsError;
+    // Update points
+    mockLoyaltyPoints.points += pointsToAward;
+    mockLoyaltyPoints.lifetime_points += pointsToAward;
+    mockLoyaltyPoints.updated_at = new Date().toISOString();
 
     return true;
-  } catch (error) {
-    console.error('Error adding loyalty points:', error);
+  } catch {
     return false;
   }
 };
@@ -126,52 +120,33 @@ export const addLoyaltyPointsForPurchase = async (
  * Redeem loyalty points
  */
 export const redeemLoyaltyPoints = async (
-  points: number, 
-  description: string = 'Points redeemed for reward'
+  points: number,
+  description: string = "Points redeemed for reward",
 ): Promise<boolean> => {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return false;
-    
-    const userId = user.user.id;
-    
-    // Get current points
-    const { data: loyaltyData } = await supabase
-      .from('loyalty_points')
-      .select('points')
-      .eq('user_id', userId)
-      .single();
-    
-    if (!loyaltyData || loyaltyData.points < points) {
-      throw new Error('Not enough points');
-    }
-    
-    // 1. Insert the transaction
-    const { error: transactionError } = await supabase
-      .from('loyalty_transactions')
-      .insert([{
-        user_id: userId,
-        points: -points,
-        type: 'redeem',
-        description
-      }]);
+  await new Promise((r) => setTimeout(r, 300)); // simulate network delay
+  const userId = getCurrentUserId();
+  if (mockLoyaltyPoints.user_id !== userId) return false;
 
-    if (transactionError) throw transactionError;
-
-    // 2. Update user's points balance
-    const { error: pointsError } = await supabase
-      .from('loyalty_points')
-      .update({
-        points: loyaltyData.points - points,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId);
-
-    if (pointsError) throw pointsError;
-
-    return true;
-  } catch (error) {
-    console.error('Error redeeming loyalty points:', error);
+  if (mockLoyaltyPoints.points < points) {
+    console.error("Not enough points to redeem");
     return false;
   }
+
+  // Insert transaction
+  const newTransaction: LoyaltyTransaction = {
+    id: `lt${Date.now()}`,
+    user_id: userId,
+    points: -points,
+    type: "redeem",
+    description,
+    order_id: null,
+    created_at: new Date().toISOString(),
+  };
+  mockLoyaltyTransactions.unshift(newTransaction);
+
+  // Update points
+  mockLoyaltyPoints.points -= points;
+  mockLoyaltyPoints.updated_at = new Date().toISOString();
+
+  return true;
 };

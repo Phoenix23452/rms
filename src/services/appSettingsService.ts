@@ -1,59 +1,44 @@
+// src/lib/mock/settings.ts or wherever you previously had settings.ts
 
-import { supabase } from "@/integrations/supabase/client";
-import { AppSettings } from "@/types/settings";
+export interface AppSettings {
+  id?: string;
+  siteName?: string;
+  maintenanceMode?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
 
+// ✅ In-memory mock settings object
+let mockSettings: AppSettings = {
+  id: "mock-id-123",
+  siteName: "Mock Food Delivery",
+  maintenanceMode: false,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+// ✅ Simulate fetching settings (with delay)
 export const fetchSettings = async (): Promise<AppSettings | null> => {
-  const { data, error } = await supabase
-    .from('settings')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error fetching settings:', error);
-    return null;
-  }
-
-  return data;
+  console.log("🔧 [Mock] fetchSettings called");
+  await delay(300); // Simulate network delay
+  return mockSettings;
 };
 
-export const updateSettings = async (settings: Partial<AppSettings>): Promise<AppSettings | null> => {
-  // If no settings exist, create new ones
-  if (!settings.id) {
-    const { data, error } = await supabase
-      .from('settings')
-      .insert([{
-        ...settings,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
+// ✅ Simulate updating settings (with delay)
+export const updateSettings = async (
+  settings: Partial<AppSettings>,
+): Promise<AppSettings | null> => {
+  console.log("📝 [Mock] updateSettings called with:", settings);
+  await delay(300); // Simulate network delay
 
-    if (error) {
-      console.error('Error creating settings:', error);
-      throw error;
-    }
+  mockSettings = {
+    ...mockSettings,
+    ...settings,
+    updated_at: new Date().toISOString(),
+  };
 
-    return data;
-  }
-
-  // Update existing settings
-  const { data, error } = await supabase
-    .from('settings')
-    .update({
-      ...settings,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', settings.id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating settings:', error);
-    throw error;
-  }
-
-  return data;
+  return mockSettings;
 };
+
+// Utility: delay for fake async calls
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));

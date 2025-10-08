@@ -11,120 +11,76 @@ export interface SliderImage {
   button_link?: string;
 }
 
+// In-memory store for slider images
+let sliderImages: SliderImage[] = [];
+
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+const generateId = () => Math.random().toString(36).slice(2, 10);
+const nowISO = () => new Date().toISOString();
+
 export const fetchSliderImages = async (
   type: "menu" | "home" | "about",
 ): Promise<SliderImage[]> => {
-  try {
-    // Use any type to bypass the TypeScript validation since the table exists in DB but not in types
-    const { data, error } = await (supabase as any)
-      .from("slider_images")
-      .select("*")
-      .eq("type", type)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching slider images:", error);
-      return [];
-    }
-
-    return (data as SliderImage[]) || [];
-  } catch (error) {
-    console.error("Unexpected error fetching slider images:", error);
-    return [];
-  }
+  await delay(50);
+  return sliderImages
+    .filter((img) => img.type === type && img.is_active)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
 };
 
 export const createSliderImage = async (
   sliderImage: Omit<SliderImage, "id" | "created_at" | "updated_at">,
-): Promise<SliderImage | null> => {
-  try {
-    // Use any type to bypass the TypeScript validation
-    const { data, error } = await (supabase as any)
-      .from("slider_images")
-      .insert([sliderImage])
-      .select()
-      .single();
+): Promise<SliderImage> => {
+  await delay(50);
 
-    if (error) {
-      console.error("Error creating slider image:", error);
-      return null;
-    }
+  const newImage: SliderImage = {
+    ...sliderImage,
+    id: generateId(),
+    created_at: nowISO(),
+    updated_at: nowISO(),
+  };
 
-    return data as SliderImage;
-  } catch (error) {
-    console.error("Unexpected error creating slider image:", error);
-    return null;
-  }
+  sliderImages.push(newImage);
+  return newImage;
 };
 
 export const updateSliderImage = async (
   id: string,
   updates: Partial<SliderImage>,
 ): Promise<SliderImage | null> => {
-  try {
-    // Use any type to bypass the TypeScript validation
-    const { data, error } = await (supabase as any)
-      .from("slider_images")
-      .update(updates)
-      .eq("id", id)
-      .select()
-      .single();
+  await delay(50);
 
-    if (error) {
-      console.error("Error updating slider image:", error);
-      return null;
-    }
+  const index = sliderImages.findIndex((img) => img.id === id);
+  if (index === -1) return null;
 
-    return data as SliderImage;
-  } catch (error) {
-    console.error("Unexpected error updating slider image:", error);
-    return null;
-  }
+  sliderImages[index] = {
+    ...sliderImages[index],
+    ...updates,
+    updated_at: nowISO(),
+  };
+
+  return sliderImages[index];
 };
 
 export const deleteSliderImage = async (id: string): Promise<boolean> => {
-  try {
-    // Use any type to bypass the TypeScript validation
-    const { error } = await (supabase as any)
-      .from("slider_images")
-      .delete()
-      .eq("id", id);
+  await delay(50);
 
-    if (error) {
-      console.error("Error deleting slider image:", error);
-      return false;
-    }
+  const index = sliderImages.findIndex((img) => img.id === id);
+  if (index === -1) return false;
 
-    return true;
-  } catch (error) {
-    console.error("Unexpected error deleting slider image:", error);
-    return false;
-  }
+  sliderImages.splice(index, 1);
+  return true;
 };
 
+// Dummy upload: returns a fake public URL for the uploaded file
 export const uploadSliderImage = async (
   file: File,
   path: string,
 ): Promise<string | null> => {
-  try {
-    const fileExt = file.name.split(".").pop();
-    const filePath = `${path}/${Date.now()}.${fileExt}`;
+  await delay(50);
 
-    const { error: uploadError } = await supabase.storage
-      .from("sliders")
-      .upload(filePath, file);
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${path}/${Date.now()}.${fileExt}`;
 
-    if (uploadError) {
-      console.error("Error uploading slider image:", uploadError);
-      return null;
-    }
-
-    const { data } = supabase.storage.from("sliders").getPublicUrl(filePath);
-
-    return data.publicUrl;
-  } catch (error) {
-    console.error("Unexpected error uploading slider image:", error);
-    return null;
-  }
+  // Simulate upload success and return fake public URL
+  return `https://fake-storage.com/${filePath}`;
 };

@@ -1,35 +1,40 @@
+export interface WalletSettings {
+  id: string;
+  min_withdraw_amount: number;
+  max_withdraw_amount: number;
+  withdrawal_fee: number;
+  created_at: string;
+  updated_at: string;
+  [key: string]: any; // for extra fields if needed
+}
 
-import { supabase } from "@/integrations/supabase/client";
-import { WalletSettings } from "@/types/settings";
-
-export const fetchWalletSettings = async (): Promise<WalletSettings | null> => {
-  const { data, error } = await supabase
-    .from('wallet_settings')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error) {
-    console.error('Error fetching wallet settings:', error);
-    return null;
-  }
-
-  return data;
+// In-memory mock data
+let walletSettings: WalletSettings | null = {
+  id: "wallet-settings-1",
+  min_withdraw_amount: 10,
+  max_withdraw_amount: 1000,
+  withdrawal_fee: 2.5,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
-export const updateWalletSettings = async (settings: Partial<WalletSettings>): Promise<WalletSettings | null> => {
-  const { data, error } = await supabase
-    .from('wallet_settings')
-    .update(settings)
-    .eq('id', settings.id)
-    .select()
-    .single();
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-  if (error) {
-    console.error('Error updating wallet settings:', error);
-    throw error;
-  }
+export const fetchWalletSettings = async (): Promise<WalletSettings | null> => {
+  await delay(50);
+  return walletSettings;
+};
 
-  return data;
+export const updateWalletSettings = async (
+  settings: Partial<WalletSettings>,
+): Promise<WalletSettings | null> => {
+  await delay(50);
+  if (!walletSettings) return null;
+
+  walletSettings = {
+    ...walletSettings,
+    ...settings,
+    updated_at: new Date().toISOString(),
+  };
+  return walletSettings;
 };
