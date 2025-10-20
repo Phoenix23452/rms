@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function MenuPage({
-  isMobile,
   categories,
   products,
 }: {
@@ -64,7 +63,7 @@ export default function MenuPage({
   // Update cart count when order is confirmed
   useEffect(() => {
     updateCartCount();
-  }, []);
+  }, [cartCount, updateCartCount]);
 
   return (
     <div className="bg-gray-100 flex flex-col min-h-screen">
