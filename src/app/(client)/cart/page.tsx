@@ -22,17 +22,18 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import Image from "next/image";
 
 // Promotion codes
-const promotionCodes = [
-  { code: "WELCOME10", discount: 0.1, description: "10% off your first order" },
-  {
-    code: "FREESHIP",
-    discount: 3.5,
-    description: "Free delivery",
-    type: "shipping",
-  },
-];
+// const promotionCodes = [
+//   { code: "WELCOME10", discount: 0.1, description: "10% off your first order" },
+//   {
+//     code: "FREESHIP",
+//     discount: 3.5,
+//     description: "Free delivery",
+//     type: "shipping",
+//   },
+// ];
 
 // 🛠 helper: read + validate cart
 const getCartFromStorage = () => {
@@ -44,9 +45,6 @@ const getCartFromStorage = () => {
     return parsedCart.map((item: CartItem) => ({
       ...item,
       quantity: item.quantity || 1,
-      price: item.product.regularPrice || item.price || 0,
-      totalPrice: item.price || (item.price || 0) * (item.quantity || 1),
-      options: item.optionalItems || [],
     }));
   } catch (error) {
     console.error("Error parsing cart data:", error);
@@ -55,24 +53,22 @@ const getCartFromStorage = () => {
 };
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>(getCartFromStorage());
-  const [promoCode, setPromoCode] = useState("");
+  console.log("Cart Items:", cartItems);
+  // const [promoCode, setPromoCode] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
 
   // Calculate subtotal
   const subtotal =
     cartItems.length > 0
-      ? cartItems.reduce(
-          (total: any, item: any) =>
-            total + (item.totalPrice || item.price * item.quantity),
-          0,
-        )
+      ? cartItems.reduce((total, item) => total + item.price, 0)
       : 0;
 
   // Delivery fee (could be dynamic based on location)
   const deliveryFee = 3.5;
 
   // Calculate tax
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.0;
 
   // Calculate discount
   const discount = appliedPromo
@@ -82,18 +78,18 @@ const CartPage = () => {
     : 0;
 
   // Calculate shipping discount
-  const shippingDiscount =
-    appliedPromo && appliedPromo.type === "shipping" ? deliveryFee : 0;
+  const shippingDiscount = 0;
+  // appliedPromo && appliedPromo.type === "shipping" ? deliveryFee : 0;
 
   // Calculate total
   const total = subtotal + deliveryFee + tax - discount - shippingDiscount;
 
   // Update item quantity
-  const updateQuantity = (id: any, newQuantity: any) => {
+  const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
 
     setCartItems(
-      cartItems?.map((item: any) => {
+      cartItems?.map((item: CartItem) => {
         if (item.id === id) {
           const unitPrice = item.price;
           return {
@@ -108,8 +104,8 @@ const CartPage = () => {
   };
 
   // Remove item from cart
-  const removeItem = (id: any) => {
-    setCartItems(cartItems.filter((item: any) => item.id !== id));
+  const removeItem = (id: number) => {
+    setCartItems(cartItems.filter((item: CartItem) => item.id !== id));
 
     toast.info("Item removed", {
       description: "Item has been removed from your cart.",
@@ -171,9 +167,11 @@ const CartPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {cartItems.map((item: CartItem) => (
-                    <div key={item.id} className="flex space-x-4">
-                      <img
+                  {cartItems.map((item: CartItem, index: number) => (
+                    <div key={index} className="flex space-x-4">
+                      <Image
+                        width={100}
+                        height={100}
                         src={
                           item.product.image || "https://placehold.co/100x100"
                         }
@@ -188,8 +186,24 @@ const CartPage = () => {
                               ({item.variant?.name})
                             </span>
                           </h3>
+
                           <span className="font-medium">
-                            {formatCurrency(item.price * item.quantity)}
+                            {formatCurrency(item.regularPrice * item.quantity)}
+                          </span>
+                        </div>
+                        <div className="flex -mt-2 justify-between">
+                          <h3 className="font-medium">
+                            <span className="font-normal text-sm text-gray-700">
+                              Discount
+                            </span>
+                          </h3>
+
+                          <span className="font-normal text-sm text-green-700">
+                            -{" "}
+                            {formatCurrency(
+                              (item.regularPrice - item.unitPrice) *
+                                item.quantity,
+                            )}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground line-clamp-1">
@@ -199,7 +213,10 @@ const CartPage = () => {
                           {item.optionalItems &&
                             item.optionalItems.length > 0 &&
                             item.optionalItems.map((option: Variant) => (
-                              <div className=" flex justify-between">
+                              <div
+                                key={option.id}
+                                className=" flex justify-between"
+                              >
                                 <Badge variant="secondary" key={option.id}>
                                   <span className="text-xs font-mono">
                                     {option.product?.name} ({option.name})
@@ -211,6 +228,17 @@ const CartPage = () => {
                               </div>
                             ))}
                         </div>
+                        <div className="flex justify-between border-t pt-2 mt-2">
+                          <h3 className="font-medium">
+                            <span className="font-mono text-sm text-black">
+                              Total
+                            </span>
+                          </h3>
+
+                          <span className="font-normal text-sm text-red-500">
+                            {formatCurrency(item.price)}
+                          </span>
+                        </div>
                         <div className="flex justify-between items-center mt-2">
                           <div className="flex items-center space-x-2">
                             <Button
@@ -218,7 +246,10 @@ const CartPage = () => {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
+                                updateQuantity(
+                                  Number(item.id),
+                                  item.quantity - 1,
+                                )
                               }
                             >
                               <Minus className="h-3 w-3" />
@@ -231,7 +262,10 @@ const CartPage = () => {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
+                                updateQuantity(
+                                  Number(item.id),
+                                  item.quantity + 1,
+                                )
                               }
                             >
                               <Plus className="h-3 w-3" />
@@ -241,7 +275,7 @@ const CartPage = () => {
                             variant="ghost"
                             size="sm"
                             className="text-red-500"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => removeItem(Number(item.id))}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             Remove
@@ -369,7 +403,7 @@ const CartPage = () => {
           </div>
           <h3 className="text-xl font-medium">Your cart is empty</h3>
           <p className="text-muted-foreground max-w-sm mt-2">
-            Looks like you haven't added any items to your cart yet.
+            Looks like you haven&apos;t added any items to your cart yet.
           </p>
           <Link href={"/menu"}>
             <Button className="mt-6">

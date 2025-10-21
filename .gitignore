@@ -44,4 +44,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+TODO.txt
+Task_Check.txt
 /src/generated/prisma
+

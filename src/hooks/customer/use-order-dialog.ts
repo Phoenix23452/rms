@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useOrderDialog = (navigate: any, toast: any) => {
   const [selectedItem, setSelectedItem] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -28,7 +29,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
 
   const calculateUnitPrice = (
     product: Product,
-    variant?: Variant | null,
+    variant: Variant | null,
   ): number => {
     let basePrice = variant ? variant.price : product.regularPrice;
     if (product.discountPercentage) {
@@ -53,7 +54,15 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     if (!selectedItem) return;
     if (!selectedVariant) return;
     const unitPrice = calculateUnitPrice(selectedItem, selectedVariant);
-    const totalPrice = unitPrice * quantity;
+    let totalPrice = unitPrice * quantity;
+    // Add price of optional items, if any
+    if (selectedOptionals && selectedOptionals.length > 0) {
+      selectedOptionals.forEach((optionalItem) => {
+        // Assuming optionalItem.price gives the price of the optional variant
+        totalPrice += optionalItem.price;
+      });
+    }
+
     const orderItem: CartItem = {
       product: selectedItem,
       quantity: quantity,
@@ -97,7 +106,7 @@ export const useOrderDialog = (navigate: any, toast: any) => {
     // Get current cart from localStorage
     const cart = getCart();
 
-    const unitPrice = calculateUnitPrice(item);
+    const unitPrice = calculateUnitPrice(item, item.variants[0]);
     // Create the new cart item
     const cartItem: CartItem = {
       product: item,
