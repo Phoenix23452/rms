@@ -85,17 +85,24 @@ const CartPage = () => {
   const total = subtotal + deliveryFee + tax - discount - shippingDiscount;
 
   // Update item quantity
-  const updateQuantity = (id: number, newQuantity: number) => {
+  const updateQuantity = (cartItem: CartItem, newQuantity: number) => {
     if (newQuantity < 1) return;
 
+    let totalPrice = cartItem.unitPrice * newQuantity;
+    // Add price of optional items, if any
+    if (cartItem.optionalItems && cartItem.optionalItems.length > 0) {
+      cartItem.optionalItems.forEach((optionalItem) => {
+        // Assuming optionalItem.price gives the price of the optional variant
+        totalPrice += optionalItem.price;
+      });
+    }
     setCartItems(
       cartItems?.map((item: CartItem) => {
-        if (item.id === id) {
-          const unitPrice = item.price;
+        if (item.variantId === cartItem.variantId) {
           return {
             ...item,
             quantity: newQuantity,
-            totalPrice: unitPrice * newQuantity,
+            price: totalPrice,
           };
         }
         return item;
@@ -104,8 +111,12 @@ const CartPage = () => {
   };
 
   // Remove item from cart
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter((item: CartItem) => item.id !== id));
+  const removeItem = (cartItem: CartItem) => {
+    setCartItems(
+      cartItems.filter(
+        (item: CartItem) => item.variantId !== cartItem.variantId,
+      ),
+    );
 
     toast.info("Item removed", {
       description: "Item has been removed from your cart.",
@@ -246,10 +257,7 @@ const CartPage = () => {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() =>
-                                updateQuantity(
-                                  Number(item.id),
-                                  item.quantity - 1,
-                                )
+                                updateQuantity(item, item.quantity - 1)
                               }
                             >
                               <Minus className="h-3 w-3" />
@@ -262,10 +270,7 @@ const CartPage = () => {
                               size="icon"
                               className="h-8 w-8"
                               onClick={() =>
-                                updateQuantity(
-                                  Number(item.id),
-                                  item.quantity + 1,
-                                )
+                                updateQuantity(item, item.quantity + 1)
                               }
                             >
                               <Plus className="h-3 w-3" />
@@ -275,7 +280,7 @@ const CartPage = () => {
                             variant="ghost"
                             size="sm"
                             className="text-red-500"
-                            onClick={() => removeItem(Number(item.id))}
+                            onClick={() => removeItem(item)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             Remove
