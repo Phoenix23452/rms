@@ -1,13 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,47 +29,51 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-// Mock cart items
-const cartItems = [
-  {
-    id: 1,
-    name: "Classic Cheeseburger",
-    price: 8.99,
-    quantity: 1,
-    options: ["Regular", "Bacon (+$1.50)"],
-    totalPrice: 10.49,
-  },
-  {
-    id: 2,
-    name: "French Fries",
-    price: 3.99,
-    quantity: 1,
-    options: ["Large (+$1.50)", "Cajun Seasoning (+$0.50)"],
-    totalPrice: 5.99,
-  },
-  {
-    id: 3,
-    name: "Chocolate Milkshake",
-    price: 4.99,
-    quantity: 1,
-    options: ["Regular", "Whipped Cream (+$0.50)"],
-    totalPrice: 5.49,
-  },
-];
+import { formatCurrency } from "@/lib/utils";
 
 // Mock delivery areas
-const deliveryAreas = [
-  { id: 1, name: "Downtown", fee: 3.5, time: 20 },
-  { id: 2, name: "Westside", fee: 4.0, time: 25 },
-  { id: 3, name: "Eastside", fee: 4.5, time: 30 },
-  { id: 4, name: "Northend", fee: 5.0, time: 35 },
-  { id: 5, name: "Southside", fee: 5.5, time: 40 },
-];
+// const deliveryAreas = [
+//   { id: 1, name: "Downtown", fee: 3.5, time: 20 },
+//   { id: 2, name: "Westside", fee: 4.0, time: 25 },
+//   { id: 3, name: "Eastside", fee: 4.5, time: 30 },
+//   { id: 4, name: "Northend", fee: 5.0, time: 35 },
+//   { id: 5, name: "Southside", fee: 5.5, time: 40 },
+// ];
 
+// 🛠 helper: read + validate cart
+const getCartFromStorage = () => {
+  if (typeof window === "undefined") return [];
+  const savedCart = localStorage.getItem("cart");
+  if (!savedCart) return [];
+  try {
+    const parsedCart = JSON.parse(savedCart);
+    return parsedCart.map((item: CartItem) => ({
+      ...item,
+      quantity: item.quantity || 1,
+    }));
+  } catch (error) {
+    console.error("Error parsing cart data:", error);
+    return [];
+  }
+};
+const computeTotalDiscount = (cartItems: CartItem[]) => {
+  const discount = cartItems.reduce((acc, item) => {
+    const regularPrice = item.regularPrice;
+    const unitPrice = item.unitPrice;
+
+    // (regularPrice - unitPrice) * quantity
+    const itemDiscount = (regularPrice - unitPrice) * item.quantity;
+
+    return acc + itemDiscount;
+  }, 0);
+
+  return discount;
+};
 const CheckoutPage = () => {
   const router = useRouter();
   // Form state
+  const [cartItems, setCartItems] = useState<CartItem[]>(getCartFromStorage());
+  console.log("Cart Items:", cartItems);
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [addressType, setAddressType] = useState("home");
   const [selectedArea, setSelectedArea] = useState("1");
@@ -91,29 +88,36 @@ const CheckoutPage = () => {
   const [cardCVV, setCardCVV] = useState("");
 
   // Calculate order totals
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.totalPrice,
-    0,
-  );
-  const selectedAreaObj = deliveryAreas.find(
-    (area) => area.id.toString() === selectedArea,
-  );
-  const deliveryFee =
-    deliveryOption === "delivery"
-      ? selectedAreaObj
-        ? selectedAreaObj.fee
-        : 0
+  // const subtotal = cartItems.reduce(
+  //   (total, item) => total + item.totalPrice,
+  //   0,
+  // );
+  const subtotal =
+    cartItems.length > 0
+      ? cartItems.reduce((total, item) => total + item.price, 0)
       : 0;
-  const tax = subtotal * 0.08;
+  // const selectedAreaObj = deliveryAreas.find(
+  //   (area) => area.id.toString() === selectedArea,
+  // );
+  // const deliveryFee =
+  //   deliveryOption === "delivery"
+  //     ? selectedAreaObj || 0
+  //       ? selectedAreaObj.fee
+  //       : 0
+  //     : 0;
+  const deliveryFee = deliveryOption === "delivery" ? 5.0 : 2.0;
+
+  const discount = computeTotalDiscount(cartItems);
+  const tax = subtotal * 0.0;
   const total = subtotal + deliveryFee + tax;
 
   // Get estimated delivery time
-  const estimatedTime =
-    deliveryOption === "delivery"
-      ? selectedAreaObj
-        ? selectedAreaObj.time
-        : 0
-      : 15;
+  // const estimatedTime =
+  //   deliveryOption === "delivery"
+  //     ? selectedAreaObj
+  //       ? selectedAreaObj.time
+  //       : 0
+  //     : 15;
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -251,7 +255,8 @@ const CheckoutPage = () => {
                 {deliveryOption === "delivery" && (
                   <div className="space-y-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="col-span-2 md:col-span-1">
+                      {/* Delivery area selection removed */}
+                      {/* <div className="col-span-2 md:col-span-1">
                         <Label htmlFor="area" className="block mb-2">
                           Delivery Area
                         </Label>
@@ -259,8 +264,11 @@ const CheckoutPage = () => {
                           value={selectedArea}
                           onValueChange={setSelectedArea}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select area" />
+                          <SelectTrigger id="area" className="w-full">
+                            <SelectValue
+                              placeholder="Select area"
+                              className="w-full"
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {deliveryAreas.map((area) => (
@@ -268,12 +276,12 @@ const CheckoutPage = () => {
                                 key={area.id}
                                 value={area.id.toString()}
                               >
-                                {area.name} (${area.fee.toFixed(2)})
+                                {area.name} ({formatCurrency(area.fee)})
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
+                      </div> */}
                       <div className="col-span-2 md:col-span-1">
                         <Label className="block mb-2">Address Type</Label>
                         <div className="flex space-x-4">
@@ -535,7 +543,7 @@ const CheckoutPage = () => {
                 {paymentMethod === "mobile" && (
                   <div className="mt-4 text-center min-h-36">
                     <p className="text-muted-foreground">
-                      You'll be redirected to complete payment through your
+                      You&apos;ll be redirected to complete payment through your
                       mobile payment provider after placing your order.
                     </p>
                   </div>
@@ -577,12 +585,29 @@ const CheckoutPage = () => {
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="flex justify-between py-1">
-                    <div>
-                      <span className="font-medium">{item.quantity}x </span>
-                      <span>{item.name}</span>
+                  <div key={item.variantId}>
+                    <div className="flex justify-between py-1">
+                      <div>
+                        <span className="font-medium">{item.quantity}x </span>
+                        <span>{item.product.name}</span>
+                        <span className="ml-2 font-light text-sm ">
+                          ({item.variant?.name})
+                        </span>
+                      </div>
+                      <span>
+                        {formatCurrency(item.regularPrice * item.quantity)}
+                      </span>
                     </div>
-                    <span>${item.totalPrice.toFixed(2)}</span>
+                    {item.optionalItems && item.optionalItems.length > 0 && (
+                      <div className="ml-4 text-sm text-muted-foreground ">
+                        {item.optionalItems.map((option, index) => (
+                          <div key={index} className="flex justify-between">
+                            <span>- {option.name}</span>
+                            <span>{formatCurrency(option.price)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -590,9 +615,13 @@ const CheckoutPage = () => {
               <Separator />
 
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                {/* <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div> */}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Discount</span>
+                  <span>- {formatCurrency(discount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
@@ -600,11 +629,11 @@ const CheckoutPage = () => {
                       ? "Delivery Fee"
                       : "Service Fee"}
                   </span>
-                  <span>${deliveryFee.toFixed(2)}</span>
+                  <span>{formatCurrency(deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatCurrency(tax)}</span>
                 </div>
               </div>
 
@@ -612,7 +641,7 @@ const CheckoutPage = () => {
 
               <div className="flex justify-between font-bold">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatCurrency(total)}</span>
               </div>
 
               <div className="mt-4 bg-muted p-3 rounded-md">
@@ -622,7 +651,8 @@ const CheckoutPage = () => {
                     {deliveryOption === "delivery" ? (
                       <span>
                         Estimated delivery time:{" "}
-                        <strong>{estimatedTime} minutes</strong>
+                        {/* <strong>{estimatedTime } minutes</strong> */}
+                        <strong>{30} minutes</strong>
                       </span>
                     ) : deliveryOption === "pickup" ? (
                       <span>

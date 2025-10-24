@@ -93,9 +93,9 @@ type Customer = {
 
 type Order = {
   id: number;
-  customerId: number;
+  customerId?: number;
   customer?: Customer;
-  totalAmount: number;
+  total: number;
   subtotal: number;
   deliveryFee: number;
   tax: number;

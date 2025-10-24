@@ -53,7 +53,6 @@ const getCartFromStorage = () => {
 };
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>(getCartFromStorage());
-  console.log("Cart Items:", cartItems);
   // const [promoCode, setPromoCode] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
