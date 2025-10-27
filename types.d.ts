@@ -103,10 +103,11 @@ type Order = {
   status: OrderStatus;
   paymentMethod: string;
   createdAt: string;
-  orderType: string;
+  orderType: OrderType;
   deliveryNote?: string | null;
-  addressId?: number | null;
-  address?: Address | null;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
 
   items?: OrderItem[];
   timeline?: OrderTimeline[];
@@ -147,7 +148,6 @@ type Address = {
   isDefault: boolean;
   deliveryNotes?: string | null;
   pinLocation: string;
-  orders?: Order[];
 };
 
 enum Day {
@@ -185,4 +185,10 @@ enum OrderStatus {
   DISPATCHED = "DISPATCHED",
   DELIVERED = "DELIVERED",
   CANCELLED = "CANCELLED",
+}
+
+enum OrderType {
+  PICKUP = "PICKUP",
+  DINEIN = "DINEIN",
+  DELIVERY = "DELIVERY",
 }

@@ -177,8 +177,11 @@ model Order {
   createdAt     DateTime    @default(now())
   orderType     OrderType   @default(DELIVERY)
   deliveryNote  String?
-  address       Address?    @relation(fields: [addressId], references: [id])
-  addressId     Int?
+  // address       Address?    @relation(fields: [addressId], references: [id])
+  // addressId     Int?
+  address       String?
+  latitude      Float?
+  longitude     Float?
 
   items OrderItem[]
 
@@ -227,7 +230,6 @@ model Address {
   isDefault     Boolean     @default(false)
   deliveryNotes String? // Optional
   pinLocation   String // Hidden from user, used internally
-  orders        Order[]
 
   @@map("addresses")
 }

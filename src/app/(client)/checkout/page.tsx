@@ -18,28 +18,13 @@ import {
   ChevronRight,
   ChevronLeft,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import LocationPicker from "@/components/customer/LocationPicker";
-
-// Mock delivery areas
-// const deliveryAreas = [
-//   { id: 1, name: "Downtown", fee: 3.5, time: 20 },
-//   { id: 2, name: "Westside", fee: 4.0, time: 25 },
-//   { id: 3, name: "Eastside", fee: 4.5, time: 30 },
-//   { id: 4, name: "Northend", fee: 5.0, time: 35 },
-//   { id: 5, name: "Southside", fee: 5.5, time: 40 },
-// ];
 
 // 🛠 helper: read + validate cart
 const getCartFromStorage = () => {
@@ -77,7 +62,7 @@ const CheckoutPage = () => {
   console.log("Cart Items:", cartItems);
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [addressType, setAddressType] = useState("home");
-  const [selectedArea, setSelectedArea] = useState("1");
+  // const [selectedArea, setSelectedArea] = useState("1");
   const [address, setAddress] = useState("");
   const [instructions, setInstructions] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card");
