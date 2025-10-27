@@ -51,6 +51,12 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum OrderType {
+  PICKUP
+  DINEIN
+  DELIVERY
+}
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
@@ -169,7 +175,7 @@ model Order {
   status        OrderStatus @default(PLACED)
   paymentMethod String // e.g., "Card (**** 1234)"
   createdAt     DateTime    @default(now())
-  orderType     String // e.g., "Delivery" or "Pickup"
+  orderType     OrderType   @default(DELIVERY)
   deliveryNote  String?
   address       Address?    @relation(fields: [addressId], references: [id])
   addressId     Int?
