@@ -57,6 +57,12 @@ enum OrderType {
   DELIVERY
 }
 
+enum PaymentType {
+  MOBILE_PAYMENT
+  COD
+  CARD_PAYMENT
+}
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
@@ -173,7 +179,7 @@ model Order {
   tax           Float       @default(0)
   tip           Float       @default(0)
   status        OrderStatus @default(PLACED)
-  paymentMethod String // e.g., "Card (**** 1234)"
+  paymentMethod PaymentType // e.g., "Card (**** 1234)"
   createdAt     DateTime    @default(now())
   orderType     OrderType   @default(DELIVERY)
   deliveryNote  String?

@@ -101,7 +101,7 @@ type Order = {
   tax: number;
   tip: number;
   status: OrderStatus;
-  paymentMethod: string;
+  paymentMethod: PaymentType;
   createdAt: string;
   orderType: OrderType;
   deliveryNote?: string | null;
@@ -191,4 +191,9 @@ enum OrderType {
   PICKUP = "PICKUP",
   DINEIN = "DINEIN",
   DELIVERY = "DELIVERY",
+}
+enum PaymentType {
+  MOBILE_PAYMENT = "MOBILE_PAYMENT",
+  COD = "COD",
+  CARD_PAYMENT = "CARD_PAYMENT",
 }
