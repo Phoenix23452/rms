@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import LocationPicker from "@/components/customer/LocationPicker";
 
 // Mock delivery areas
 // const deliveryAreas = [
@@ -92,6 +93,10 @@ const CheckoutPage = () => {
   //   (total, item) => total + item.totalPrice,
   //   0,
   // );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSelect = (data: any) => {
+    console.log("Selected location:", data);
+  };
   const subtotal =
     cartItems.length > 0
       ? cartItems.reduce((total, item) => total + item.price, 0)
@@ -310,13 +315,14 @@ const CheckoutPage = () => {
                       <Label htmlFor="address" className="block mb-2">
                         Delivery Address
                       </Label>
-                      <Textarea
+                      {/* <Textarea
                         id="address"
                         placeholder="Enter your full address"
                         rows={3}
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                      />
+                      /> */}
+                      <LocationPicker onSelect={handleSelect} />
                     </div>
                     <div>
                       <Label htmlFor="instructions" className="block mb-2">

@@ -160,12 +160,12 @@ enum Day {
   Sun = "Sun",
 }
 
-enum MembershipTier {
-  BRONZE = "BRONZE",
-  SILVER = "SILVER",
-  GOLD = "GOLD",
-  PLATINUM = "PLATINUM",
-}
+// enum MembershipTier {
+//   BRONZE = "BRONZE",
+//   SILVER = "SILVER",
+//   GOLD = "GOLD",
+//   PLATINUM = "PLATINUM",
+// }
 
 enum AddressType {
   HOME = "HOME",
