@@ -1,12 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  addCategory,
-  deleteCategory,
-  updateCategory,
-  reorderCategory,
-} from "./actions";
+import { deleteCategory, updateCategory, reorderCategory } from "./actions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { CategoryRow } from "@/components/admin/categories/CategoryRow";

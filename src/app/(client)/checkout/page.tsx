@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/utils";
 import LocationPicker from "@/components/customer/LocationPicker";
+import { addOrder } from "./action";
 
 enum OrderStatus {
   PLACED = "PLACED",
@@ -183,6 +184,7 @@ const CheckoutPage = () => {
     toast("Order placed successfully!", {
       description: "Your order has been received and is being processed.",
     });
+    addOrder(order);
     console.log("Order Details:", {
       order,
     });

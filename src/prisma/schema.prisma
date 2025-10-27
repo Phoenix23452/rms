@@ -207,7 +207,7 @@ model OrderItem {
   price              Float // unitPrice * quantity
   note               String? // Optional note (e.g., spicy, no onions)
   regularPrice       Float
-  discountPricentage Float
+  discountPercentage Float
   // Many-to-many relation for optional items (variants)
   optionalItems      Variant[] @relation("OrderItemOptionalItems")
 
