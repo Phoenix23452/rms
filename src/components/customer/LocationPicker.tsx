@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   GoogleMap,
   Marker,
@@ -9,7 +9,8 @@ import {
 } from "@react-google-maps/api";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Locate } from "lucide-react";
 
 const libraries: "places"[] = ["places"];
 
@@ -18,37 +19,34 @@ interface LocationPickerProps {
 }
 
 export default function LocationPicker({ onSelect }: LocationPickerProps) {
-  // 🟢 Lahore as default center
-  const [center, setCenter] = useState({ lat: 31.5204, lng: 74.3587 });
+  const [center, setCenter] = useState({ lat: 31.5204, lng: 74.3587 }); // Lahore default
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(
     null,
   );
   const [address, setAddress] = useState("");
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries,
   });
 
+  /** Restrict Autocomplete to Pakistan & bias to Lahore */
   const onLoad = useCallback(
     (autocomplete: google.maps.places.Autocomplete) => {
       autocompleteRef.current = autocomplete;
-      // 1️⃣ Restrict to Pakistan
       autocomplete.setComponentRestrictions({ country: ["pk"] });
-
-      // 2️⃣ Bias results around Lahore (latitude, longitude of Lahore)
       const lahoreBounds = new google.maps.LatLngBounds(
-        new google.maps.LatLng(31.41, 74.21), // southwest
-        new google.maps.LatLng(31.63, 74.4), // northeast
+        new google.maps.LatLng(31.41, 74.21),
+        new google.maps.LatLng(31.63, 74.4),
       );
       autocomplete.setBounds(lahoreBounds);
-      autocomplete.setOptions({ strictBounds: false }); // allow global fallback
     },
     [],
   );
 
+  /** When user selects a place */
   const onPlaceChanged = useCallback(() => {
     if (!autocompleteRef.current) return;
     const place = autocompleteRef.current.getPlace();
@@ -56,76 +54,56 @@ export default function LocationPicker({ onSelect }: LocationPickerProps) {
 
     const lat = place.geometry.location?.lat();
     const lng = place.geometry.location?.lng();
-    const formatted = place.formatted_address;
+    if (!lat || !lng) return;
 
-    if (lat && lng) {
-      setCenter({ lat, lng });
-      setMarker({ lat, lng });
-      setAddress(formatted);
-      onSelect?.({ address: formatted, lat, lng });
-    }
+    const pos = { lat, lng };
+    setCenter(pos);
+    setMarker(pos);
+    setAddress(place.formatted_address);
+    onSelect?.({ address: place.formatted_address, lat, lng });
   }, [onSelect]);
 
-  /** ⚡ Add default Google Maps “Current Location” button */
-  const handleMapLoad = useCallback(
-    (map: google.maps.Map) => {
-      mapRef.current = map;
+  /** Store the map instance */
+  const handleMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+  }, []);
 
-      // Create a custom geolocation control button
-      const locationButton = document.createElement("button");
-      locationButton.textContent = "📍 My Location";
-      locationButton.classList.add(
-        "bg-white",
-        "border",
-        "rounded-lg",
-        "shadow-md",
-        "px-3",
-        "py-1.5",
-        "text-sm",
-        "cursor-pointer",
-        "hover:bg-gray-100",
-      );
+  /** Center on user location (used for both auto & button click) */
+  const locateUser = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
 
-      map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
-        locationButton,
-      );
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setCenter(pos);
+        setMarker(pos);
+        mapRef.current?.panTo(pos);
+        mapRef.current?.setZoom(15);
 
-      locationButton.addEventListener("click", () => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-              };
-              map.setCenter(pos);
-              map.setZoom(15);
-              setMarker(pos);
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: pos }, (results, status) => {
+          if (status === "OK" && results && results[0]) {
+            const addr = results[0].formatted_address;
+            setAddress(addr);
+            onSelect?.({ address: addr, lat: pos.lat, lng: pos.lng });
+          }
+        });
+      },
+      () => alert("Please enable location access."),
+      { enableHighAccuracy: true },
+    );
+  }, [onSelect]);
 
-              // Reverse geocode current location to address
-              const geocoder = new google.maps.Geocoder();
-              geocoder.geocode({ location: pos }, (results, status) => {
-                if (status === "OK" && results && results[0]) {
-                  const addr = results[0].formatted_address;
-                  setAddress(addr);
-                  onSelect?.({ address: addr, lat: pos.lat, lng: pos.lng });
-                }
-              });
-            },
-            () => {
-              alert(
-                "Unable to retrieve your location. Please allow location access.",
-              );
-            },
-            { enableHighAccuracy: true },
-          );
-        } else {
-          alert("Geolocation is not supported by this browser.");
-        }
-      });
-    },
-    [onSelect],
-  );
+  /** Auto-detect on first load */
+  useEffect(() => {
+    locateUser();
+  }, [locateUser]);
 
   if (loadError) return <p>Error loading Google Maps</p>;
   if (!isLoaded)
@@ -136,17 +114,17 @@ export default function LocationPicker({ onSelect }: LocationPickerProps) {
     );
 
   return (
-    <Card className="w-full  mx-auto">
+    <Card className="w-full mx-auto">
       <CardContent className="px-4 flex flex-col gap-4">
         <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
           <Input
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="Search for a Address..."
+            placeholder="Search for an address..."
           />
         </Autocomplete>
 
-        <div className="w-full h-[400px] rounded-xl  overflow-hidden border shadow-sm">
+        <div className="relative w-full h-[400px] rounded-xl overflow-hidden border shadow-sm">
           <GoogleMap
             center={center}
             zoom={14}
@@ -155,6 +133,17 @@ export default function LocationPicker({ onSelect }: LocationPickerProps) {
           >
             {marker && <Marker position={marker} />}
           </GoogleMap>
+
+          {/* 📍 My Location button rendered via JSX */}
+          <div className="absolute bottom-[40%] right-2.5">
+            <Button
+              variant="secondary"
+              className="shadow-md rounded-full size-10  bg-white hover:bg-gray-100"
+              onClick={locateUser}
+            >
+              <Locate className="w-8 h-8 text-gray-700" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
