@@ -202,7 +202,7 @@ enum CustomerStatus {
 }
 
 enum OrderStatus {
-  PLACED = "PLACED",
+  PANDING = "PANDING",
   CONFIRMED = "CONFIRMED",
   DISPATCHED = "DISPATCHED",
   DELIVERED = "DELIVERED",

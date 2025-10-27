@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // ----- ENUMS -----
 export const orderStatusEnum = z.enum([
-  "PLACED",
+  "PANDING",
   "CONFIRMED",
   "DISPATCHED",
   "DELIVERED",
@@ -79,7 +79,7 @@ export const orderSchema = z
     deliveryFee: z.number().nonnegative().default(0),
     tax: z.number().nonnegative().default(0),
     tip: z.number().nonnegative().default(0),
-    status: orderStatusEnum.default("PLACED"),
+    status: orderStatusEnum.default("PANDING"),
     paymentMethod: paymentTypeEnum,
     orderType: orderTypeEnum.default("DELIVERY"),
     deliveryNote: z.string().optional(),

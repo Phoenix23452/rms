@@ -143,7 +143,7 @@ export default class OrderRepository extends BaseRepository<Order> {
    */
   private mapStatusLabel(status: string): string {
     const map: Record<string, string> = {
-      PLACED: "Order Placed",
+      PANDING: "Order Placed",
       CONFIRMED: "Order Confirmed",
       DISPATCHED: "Order Dispatched",
       DELIVERED: "Order Delivered",
