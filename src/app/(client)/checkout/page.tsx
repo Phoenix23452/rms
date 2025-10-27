@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +22,27 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import LocationPicker from "@/components/customer/LocationPicker";
+
+enum OrderStatus {
+  PLACED = "PLACED",
+  CONFIRMED = "CONFIRMED",
+  DISPATCHED = "DISPATCHED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+}
+
+enum OrderType {
+  PICKUP = "PICKUP",
+  DINEIN = "DINEIN",
+  DELIVERY = "DELIVERY",
+}
+enum PaymentType {
+  MOBILE_PAYMENT = "MOBILE_PAYMENT",
+  COD = "COD",
+  CARD_PAYMENT = "CARD_PAYMENT",
+}
 
 // 🛠 helper: read + validate cart
 const getCartFromStorage = () => {
@@ -56,36 +74,60 @@ const computeTotalDiscount = (cartItems: CartItem[]) => {
   return discount;
 };
 const CheckoutPage = () => {
-  const router = useRouter();
   // Form state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [cartItems, setCartItems] = useState<CartItem[]>(getCartFromStorage());
   console.log("Cart Items:", cartItems);
-  const [deliveryOption, setDeliveryOption] = useState("delivery");
+  const [order, setOrder] = useState<CreateOrderDto>({
+    total: 0,
+    subtotal: 0,
+    deliveryFee: 0,
+    tax: 0,
+    tip: 0,
+    status: OrderStatus.PLACED,
+    paymentMethod: PaymentType.COD,
+    orderType: OrderType.DELIVERY,
+    deliveryNote: "",
+    address: "Hello there",
+    items: [],
+    customer: { fullName: "", phone: "", email: "" },
+  });
   const [addressType, setAddressType] = useState("home");
-  // const [selectedArea, setSelectedArea] = useState("1");
-  const [address, setAddress] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("card");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCVV, setCardCVV] = useState("");
+  const discount = computeTotalDiscount(cartItems);
 
-  // Calculate order totals
-  // const subtotal = cartItems.reduce(
-  //   (total, item) => total + item.totalPrice,
-  //   0,
-  // );
+  useEffect(() => {
+    const subtotal =
+      cartItems.reduce(
+        (total, item) => total + (item.unitPrice ?? item.price) * item.quantity,
+        0,
+      ) || 0;
+
+    const deliveryFee = order.orderType === OrderType.DELIVERY ? 5.0 : 2.0;
+
+    const tax = subtotal * 0.0;
+    const total = subtotal + deliveryFee + tax;
+    setOrder((prev) => ({
+      ...prev,
+      items: cartItems,
+      subtotal,
+      deliveryFee,
+      tax,
+      total,
+    }));
+  }, [cartItems, order.orderType]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSelect = (data: any) => {
-    console.log("Selected location:", data);
+    setOrder((prev) => ({
+      ...prev,
+      address: data.address,
+      latitude: data.lat,
+      longitude: data.lng,
+    }));
   };
-  const subtotal =
-    cartItems.length > 0
-      ? cartItems.reduce((total, item) => total + item.price, 0)
-      : 0;
   // const selectedAreaObj = deliveryAreas.find(
   //   (area) => area.id.toString() === selectedArea,
   // );
@@ -95,11 +137,6 @@ const CheckoutPage = () => {
   //       ? selectedAreaObj.fee
   //       : 0
   //     : 0;
-  const deliveryFee = deliveryOption === "delivery" ? 5.0 : 2.0;
-
-  const discount = computeTotalDiscount(cartItems);
-  const tax = subtotal * 0.0;
-  const total = subtotal + deliveryFee + tax;
 
   // Get estimated delivery time
   // const estimatedTime =
@@ -108,27 +145,34 @@ const CheckoutPage = () => {
   //       ? selectedAreaObj.time
   //       : 0
   //     : 15;
-
+  useEffect(() => {}, []);
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate form
-    if (!name || !phone || !email) {
+    if (
+      !order.customer?.fullName ||
+      !order.customer?.phone ||
+      !order.customer?.email
+    ) {
       toast.error("Missing information", {
         description: "Please fill in all required contact fields.",
       });
       return;
     }
 
-    if (deliveryOption === "delivery" && !address) {
+    if (order.orderType === OrderType.DELIVERY && !order.address) {
       toast.error("Address required", {
         description: "Please enter your delivery address.",
       });
       return;
     }
 
-    if (paymentMethod === "card" && (!cardNumber || !cardExpiry || !cardCVV)) {
+    if (
+      order.paymentMethod === PaymentType.CARD_PAYMENT &&
+      (!cardNumber || !cardExpiry || !cardCVV)
+    ) {
       toast.error("Payment information required", {
         description: "Please enter your card details.",
       });
@@ -139,9 +183,11 @@ const CheckoutPage = () => {
     toast("Order placed successfully!", {
       description: "Your order has been received and is being processed.",
     });
-
+    console.log("Order Details:", {
+      order,
+    });
     // Navigate to order tracking page with a mock order ID
-    router.push("/track/ORD-5291");
+    // router.push("/track/ORD-5291");
   };
 
   // Format card number as user types
@@ -179,12 +225,22 @@ const CheckoutPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <RadioGroup
-                  value={deliveryOption}
-                  onValueChange={setDeliveryOption}
+                  value={order.orderType}
+                  onValueChange={(val) =>
+                    setOrder((prev) => ({
+                      ...prev,
+                      orderType:
+                        val === "pickup"
+                          ? OrderType.PICKUP
+                          : val === "dine-in"
+                            ? OrderType.DINEIN
+                            : OrderType.DELIVERY,
+                    }))
+                  }
                   className="grid grid-cols-1 md:grid-cols-3 gap-4"
                 >
                   <div
-                    className={`border rounded-md p-4 cursor-pointer ${deliveryOption === "delivery" ? "border-primary" : "border-border"}`}
+                    className={`border rounded-md p-4 cursor-pointer ${order.orderType === OrderType.DELIVERY ? "border-primary" : "border-border"}`}
                   >
                     <RadioGroupItem
                       value="delivery"
@@ -203,7 +259,7 @@ const CheckoutPage = () => {
                     </Label>
                   </div>
                   <div
-                    className={`border rounded-md p-4 cursor-pointer ${deliveryOption === "pickup" ? "border-primary" : "border-border"}`}
+                    className={`border rounded-md p-4 cursor-pointer ${order.orderType === OrderType.PICKUP ? "border-primary" : "border-border"}`}
                   >
                     <RadioGroupItem
                       value="pickup"
@@ -222,7 +278,7 @@ const CheckoutPage = () => {
                     </Label>
                   </div>
                   <div
-                    className={`border rounded-md p-4 cursor-pointer ${deliveryOption === "dine-in" ? "border-primary" : "border-border"}`}
+                    className={`border rounded-md p-4 cursor-pointer ${order.orderType === OrderType.DINEIN ? "border-primary" : "border-border"}`}
                   >
                     <RadioGroupItem
                       value="dine-in"
@@ -242,7 +298,7 @@ const CheckoutPage = () => {
                   </div>
                 </RadioGroup>
 
-                {deliveryOption === "delivery" && (
+                {order.orderType === OrderType.DELIVERY && (
                   <div className="space-y-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                       {/* Delivery area selection removed */}
@@ -317,14 +373,19 @@ const CheckoutPage = () => {
                         id="instructions"
                         placeholder="Add any special instructions for delivery"
                         rows={2}
-                        value={instructions}
-                        onChange={(e) => setInstructions(e.target.value)}
+                        value={order.deliveryNote || ""}
+                        onChange={(e) =>
+                          setOrder((prev) => ({
+                            ...prev,
+                            deliveryNote: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
                 )}
 
-                {deliveryOption === "pickup" && (
+                {order.orderType === OrderType.PICKUP && (
                   <div className="mt-4">
                     <div className="flex items-center space-x-2">
                       <Clock className="h-5 w-5 text-muted-foreground" />
@@ -344,14 +405,19 @@ const CheckoutPage = () => {
                         id="pickupInstructions"
                         placeholder="Add any special instructions for pickup"
                         rows={2}
-                        value={instructions}
-                        onChange={(e) => setInstructions(e.target.value)}
+                        value={order.deliveryNote || ""}
+                        onChange={(e) =>
+                          setOrder((prev) => ({
+                            ...prev,
+                            deliveryNote: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
                 )}
 
-                {deliveryOption === "dine-in" && (
+                {order.orderType === OrderType.DINEIN && (
                   <div className="mt-4">
                     <div className="flex items-center space-x-2">
                       <Clock className="h-5 w-5 text-muted-foreground" />
@@ -368,8 +434,13 @@ const CheckoutPage = () => {
                         id="dineInstructions"
                         placeholder="Add any special requests or notes"
                         rows={2}
-                        value={instructions}
-                        onChange={(e) => setInstructions(e.target.value)}
+                        value={order.deliveryNote || ""}
+                        onChange={(e) =>
+                          setOrder((prev) => ({
+                            ...prev,
+                            deliveryNote: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                   </div>
@@ -391,8 +462,16 @@ const CheckoutPage = () => {
                     <Input
                       id="name"
                       placeholder="Enter your full name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      value={order.customer?.fullName || ""}
+                      onChange={(e) =>
+                        setOrder((prev) => ({
+                          ...prev,
+                          customer: {
+                            ...prev.customer,
+                            fullName: e.target.value,
+                          },
+                        }))
+                      }
                       required
                     />
                   </div>
@@ -403,8 +482,16 @@ const CheckoutPage = () => {
                     <Input
                       id="phone"
                       placeholder="Enter your phone number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      value={order.customer?.phone || ""}
+                      onChange={(e) =>
+                        setOrder((prev) => ({
+                          ...prev,
+                          customer: {
+                            ...prev.customer,
+                            phone: e.target.value,
+                          },
+                        }))
+                      }
                       required
                     />
                   </div>
@@ -417,8 +504,16 @@ const CheckoutPage = () => {
                     id="email"
                     type="email"
                     placeholder="Enter your email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={order.customer?.email || ""}
+                    onChange={(e) =>
+                      setOrder((prev) => ({
+                        ...prev,
+                        customer: {
+                          ...prev.customer,
+                          email: e.target.value,
+                        },
+                      }))
+                    }
                     required
                   />
                 </div>
@@ -432,44 +527,22 @@ const CheckoutPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={setPaymentMethod}
+                  value={order.paymentMethod}
+                  onValueChange={(val) =>
+                    setOrder((prev) => ({
+                      ...prev,
+                      paymentMethod:
+                        val === "mobile"
+                          ? PaymentType.MOBILE_PAYMENT
+                          : val === "cash"
+                            ? PaymentType.COD
+                            : PaymentType.CARD_PAYMENT,
+                    }))
+                  }
                   className="grid grid-cols-1 md:grid-cols-3 gap-4"
                 >
                   <div
-                    className={`border rounded-md p-4 cursor-pointer ${paymentMethod === "card" ? "border-primary" : "border-border"}`}
-                  >
-                    <RadioGroupItem
-                      value="card"
-                      id="card"
-                      className="sr-only"
-                    />
-                    <Label
-                      htmlFor="card"
-                      className="flex flex-col items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <CreditCard className="h-6 w-6" />
-                      <div className="font-medium">Credit/Debit Card</div>
-                    </Label>
-                  </div>
-                  <div
-                    className={`border rounded-md p-4 cursor-pointer ${paymentMethod === "mobile" ? "border-primary" : "border-border"}`}
-                  >
-                    <RadioGroupItem
-                      value="mobile"
-                      id="mobile"
-                      className="sr-only"
-                    />
-                    <Label
-                      htmlFor="mobile"
-                      className="flex flex-col items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Smartphone className="h-6 w-6" />
-                      <div className="font-medium">Mobile Payment</div>
-                    </Label>
-                  </div>
-                  <div
-                    className={`border rounded-md p-4 cursor-pointer ${paymentMethod === "cash" ? "border-primary" : "border-border"}`}
+                    className={`border rounded-md p-4 cursor-pointer ${order.paymentMethod === PaymentType.COD ? "border-primary" : "border-border"}`}
                   >
                     <RadioGroupItem
                       value="cash"
@@ -484,9 +557,42 @@ const CheckoutPage = () => {
                       <div className="font-medium">Cash on Delivery</div>
                     </Label>
                   </div>
+                  <div
+                    className={`border rounded-md p-4 cursor-pointer ${order.paymentMethod === PaymentType.CARD_PAYMENT ? "border-primary" : "border-border"}`}
+                  >
+                    <RadioGroupItem
+                      value="card"
+                      id="card"
+                      className="sr-only"
+                      disabled
+                    />
+                    <Label
+                      htmlFor="card"
+                      className="flex flex-col items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <CreditCard className="h-6 w-6" />
+                      <div className="font-medium">Credit/Debit Card</div>
+                    </Label>
+                  </div>
+                  <div
+                    className={`border rounded-md p-4 cursor-pointer ${order.paymentMethod === PaymentType.MOBILE_PAYMENT ? "border-primary" : "border-border"}`}
+                  >
+                    <RadioGroupItem
+                      value="mobile"
+                      id="mobile"
+                      className="sr-only"
+                    />
+                    <Label
+                      htmlFor="mobile"
+                      className="flex flex-col items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Smartphone className="h-6 w-6" />
+                      <div className="font-medium">Mobile Payment</div>
+                    </Label>
+                  </div>
                 </RadioGroup>
 
-                {paymentMethod === "card" && (
+                {order.paymentMethod === PaymentType.CARD_PAYMENT && (
                   <div className="space-y-4 mt-4 min-h-36">
                     <div>
                       <Label htmlFor="cardNumber" className="block mb-2">
@@ -531,7 +637,7 @@ const CheckoutPage = () => {
                   </div>
                 )}
 
-                {paymentMethod === "mobile" && (
+                {order.paymentMethod === PaymentType.MOBILE_PAYMENT && (
                   <div className="mt-4 text-center min-h-36">
                     <p className="text-muted-foreground">
                       You&apos;ll be redirected to complete payment through your
@@ -540,7 +646,7 @@ const CheckoutPage = () => {
                   </div>
                 )}
 
-                {paymentMethod === "cash" && (
+                {order.paymentMethod === PaymentType.COD && (
                   <div className="mt-4 text-center min-h-36">
                     <p className="text-muted-foreground">
                       Please have the exact amount ready for the delivery
@@ -616,15 +722,15 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {deliveryOption === "delivery"
+                    {order.orderType === OrderType.DELIVERY
                       ? "Delivery Fee"
                       : "Service Fee"}
                   </span>
-                  <span>{formatCurrency(deliveryFee)}</span>
+                  <span>{formatCurrency(order.deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Tax</span>
-                  <span>{formatCurrency(tax)}</span>
+                  <span>{formatCurrency(order.tax)}</span>
                 </div>
               </div>
 
@@ -632,20 +738,20 @@ const CheckoutPage = () => {
 
               <div className="flex justify-between font-bold">
                 <span>Total</span>
-                <span>{formatCurrency(total)}</span>
+                <span>{formatCurrency(order.total)}</span>
               </div>
 
               <div className="mt-4 bg-muted p-3 rounded-md">
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 text-muted-foreground mr-2" />
                   <span className="text-sm">
-                    {deliveryOption === "delivery" ? (
+                    {order.orderType === OrderType.DELIVERY ? (
                       <span>
                         Estimated delivery time:{" "}
                         {/* <strong>{estimatedTime } minutes</strong> */}
                         <strong>{30} minutes</strong>
                       </span>
-                    ) : deliveryOption === "pickup" ? (
+                    ) : order.orderType === OrderType.PICKUP ? (
                       <span>
                         Estimated pickup time: <strong>15-20 minutes</strong>
                       </span>

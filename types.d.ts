@@ -90,7 +90,29 @@ type Customer = {
   orders?: Order[];
   addresses?: Address[];
 };
-
+type CreateCustomerDto = {
+  fullName: string;
+  email: string;
+  phone: string;
+  about?: string | null;
+};
+type CreateOrderDto = {
+  customerId?: number;
+  total: number;
+  subtotal: number;
+  deliveryFee: number;
+  tax: number;
+  tip: number;
+  status: OrderStatus;
+  paymentMethod: PaymentType;
+  orderType: OrderType;
+  deliveryNote?: string | null;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  customer: CreateCustomerDto;
+  items: OrderItem[];
+};
 type Order = {
   id: number;
   customerId?: number;
@@ -102,7 +124,7 @@ type Order = {
   tip: number;
   status: OrderStatus;
   paymentMethod: PaymentType;
-  createdAt: string;
+  createdAt?: string;
   orderType: OrderType;
   deliveryNote?: string | null;
   address?: string;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -67,7 +68,8 @@ export default function CreateProductPage() {
 
   const handleVariantChange = (index: number, field: string, value: any) => {
     const updated = [...variants];
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     updated[index][field] = field === "price" ? parseFloat(value) : value;
     setVariants(updated);
   };
