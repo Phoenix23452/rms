@@ -25,12 +25,10 @@ import {
   Plus,
   User,
   MapPin,
-  Clock,
   CreditCard,
   Package,
   Phone,
   Printer,
-  Check,
 } from "lucide-react";
 import {
   Dialog,
@@ -60,76 +58,6 @@ enum PaymentStatus {
   PAID = "PAID",
   UNPAID = "UNPAID",
 }
-
-// Mock order data
-const order = {
-  id: "ORD-5291",
-  customerId: "CUST-2451",
-  customerName: "John Smith",
-  customerPhone: "+1 (555) 123-4567",
-  orderType: "Delivery",
-  paymentStatus: "Paid",
-  paymentMethod: "Card",
-  cardLast4: "1234",
-  totalAmount: 32.5,
-  subtotal: 27.5,
-  deliveryFee: 5.0,
-  tax: 2.75,
-  discount: 0,
-  tip: 4.0,
-  deliveryAddress: "123 Main St, Apt 4B, Downtown, NY 10001",
-  deliveryArea: "Downtown",
-  status: "Pending",
-  orderDate: "2025-04-08T14:30:00",
-  deliveryNotes: "Please leave at the door, no contact delivery.",
-  assignedRider: null,
-  items: [
-    {
-      id: 1,
-      name: "Chicken Burger",
-      variant: "Regular",
-      quantity: 1,
-      price: 8.5,
-      total: 8.5,
-    },
-    {
-      id: 2,
-      name: "Fries",
-      variant: "Large",
-      quantity: 1,
-      price: 4.0,
-      total: 4.0,
-    },
-    {
-      id: 3,
-      name: "Coca Cola",
-      variant: "Medium",
-      quantity: 2,
-      price: 2.5,
-      total: 5.0,
-    },
-    {
-      id: 4,
-      name: "Chicken Wings",
-      variant: "Spicy (8pcs)",
-      quantity: 1,
-      price: 10.0,
-      total: 10.0,
-    },
-  ],
-  statusHistory: [
-    {
-      status: "Order Placed",
-      timestamp: "2025-04-08T14:30:00",
-      note: "Order placed by customer",
-    },
-    {
-      status: "Payment Received",
-      timestamp: "2025-04-08T14:31:00",
-      note: "Payment processed successfully",
-    },
-  ],
-};
 
 // Mock riders data
 const availableRiders = [

@@ -27,7 +27,7 @@ import LocationPicker from "@/components/customer/LocationPicker";
 import { addOrder } from "./action";
 
 enum OrderStatus {
-  PANDING = "PANDING",
+  PENDING = "PENDING",
   CONFIRMED = "CONFIRMED",
   DISPATCHED = "DISPATCHED",
   DELIVERED = "DELIVERED",
@@ -85,7 +85,7 @@ const CheckoutPage = () => {
     deliveryFee: 0,
     tax: 0,
     tip: 0,
-    status: OrderStatus.PANDING,
+    status: OrderStatus.PENDING,
     paymentMethod: PaymentType.COD,
     orderType: OrderType.DELIVERY,
     deliveryNote: "",
