@@ -1,7 +1,6 @@
-import React from 'react'
+import React from "react";
+import RidersPageClient from "./RidersPageClient";
 
-export default function page() {
-  return (
-    <div>Riders</div>
-  )
+export default async function RiderPage() {
+  return <RidersPageClient />;
 }

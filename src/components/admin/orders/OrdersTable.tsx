@@ -1,40 +1,17 @@
 import { Button } from "@/components/ui/button";
 import OrderStatusBadge from "./OrderStatusBadge";
-import { Order } from "@/services/orderService";
 import { useRouter } from "next/navigation";
-
-interface OrderItem {
-  id: string;
-  customerId?: string;
-  customerName?: string;
-  orderType?: string;
-  paymentStatus?: string;
-  paymentMethod?: string;
-  totalAmount: number;
-  deliveryArea?: string | null;
-  status: string;
-  orderDate?: string;
-
-  // Possible real order properties
-  order_number?: string;
-  user_id?: string;
-  delivery_option?: string;
-  payment_status?: string;
-  payment_method?: string;
-  total_amount?: number;
-  delivery_address?: {
-    address_line: string;
-    city: string;
-    state: string;
-    postal_code: string;
-  };
-  placed_at?: string;
-}
+import Link from "next/link";
 
 // This type allows us to accept either mock orders or real API orders
 type OrdersTableProps = {
-  orders: (OrderItem | Order)[];
+  orders: Order[];
 };
+enum PaymentType {
+  MOBILE_PAYMENT = "MOBILE_PAYMENT",
+  COD = "COD",
+  CARD_PAYMENT = "CARD_PAYMENT",
+}
 
 const OrdersTable = ({ orders }: OrdersTableProps) => {
   const navigate = useRouter();
@@ -43,45 +20,50 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
     navigate.push(`/admin/orders/${orderId}`);
   };
 
-  const getCustomerName = (order: OrderItem | Order) => {
-    if ("customerName" in order) return order.customerName || "Customer";
+  const getCustomerName = (order: Order) => {
+    if (order.customer) return order.customer?.fullName || "Customer";
     return "Customer"; // For real orders, we don't have customer name yet
   };
 
-  const getCustomerId = (order: OrderItem | Order) => {
-    if ("customerId" in order) return order.customerId;
-    if ("user_id" in order) return order.user_id;
+  const getCustomerId = (order: Order) => {
+    if (order.customer) return order.customer?.customerCode || "N/A";
+  };
+
+  const getOrderType = (order: Order) => {
+    if (order.orderType) return order.orderType;
+  };
+
+  const getPaymentStatus = (order: Order) => {
+    if (order.paymentMethod) return order.paymentMethod;
+  };
+
+  const getPaymentMethod = (order: Order) => {
+    if (order.paymentMethod) return order.paymentMethod;
     return "N/A";
   };
 
-  const getOrderType = (order: OrderItem | Order) => {
-    if ("orderType" in order) return order.orderType;
-    if ("delivery_option" in order) return order.delivery_option;
-    return "N/A";
-  };
-
-  const getPaymentStatus = (order: OrderItem | Order) => {
-    if ("paymentStatus" in order) return order.paymentStatus;
-    if ("payment_status" in order) return order.payment_status;
-    return "N/A";
-  };
-
-  const getPaymentMethod = (order: OrderItem | Order) => {
-    if ("paymentMethod" in order) return order.paymentMethod;
-    if ("payment_method" in order) return order.payment_method;
-    return "N/A";
-  };
-
-  const getTotalAmount = (order: OrderItem | Order) => {
-    if ("totalAmount" in order) return order.totalAmount;
-    if ("total_amount" in order) return order.total_amount || 0;
+  const getTotalAmount = (order: Order) => {
+    if (order.total) return order.total;
     return 0;
   };
 
-  const getDeliveryArea = (order: OrderItem | Order) => {
-    if ("deliveryArea" in order) return order.deliveryArea;
-    if ("delivery_address" in order && order.delivery_address?.city)
-      return order.delivery_address.city;
+  const getDeliveryArea = (order: Order) => {
+    const addrStr =
+      typeof order.address === "string"
+        ? order.address
+        : JSON.stringify(order.address);
+    const parts = addrStr
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    // Prefer the 3rd component (common for Google Maps: road, locality, city, country)
+    if (parts.length >= 3) return parts[2].split(/\s+/)[0];
+    // Fallback to the second-last component (city/locality)
+    if (parts.length >= 2) return parts[parts.length - 2].split(/\s+/)[0];
+    // Single-part address fallback
+    if (parts.length === 1) return parts[0].split(/\s+/)[0];
+
     return "-";
   };
 
@@ -106,11 +88,9 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
               <tr
                 key={order.id}
                 className="border-b border-border hover:bg-muted/50 cursor-pointer"
-                onClick={() => handleViewOrder(order.id)}
+                onClick={() => handleViewOrder(String(order.id))}
               >
-                <td className="py-3 px-2">
-                  {"order_number" in order ? order.order_number : order.id}
-                </td>
+                <td className="py-3 px-2">ORD- {order.id}</td>
                 <td className="py-3 px-2">
                   <div>
                     <div className="font-medium">{getCustomerName(order)}</div>
@@ -124,13 +104,14 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
                   <div>
                     <div
                       className={
-                        getPaymentStatus(order)?.toLowerCase() ===
-                          "completed" || getPaymentStatus(order) === "Paid"
+                        getPaymentStatus(order) === PaymentType.CARD_PAYMENT
                           ? "text-green-600"
                           : "text-red-600"
                       }
                     >
-                      {getPaymentStatus(order)}
+                      {getPaymentStatus(order) === PaymentType.CARD_PAYMENT
+                        ? "Paid"
+                        : "Unpaid"}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {getPaymentMethod(order)}
@@ -145,16 +126,11 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
                   ${getTotalAmount(order).toFixed(2)}
                 </td>
                 <td className="py-3 px-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewOrder(order.id);
-                    }}
-                  >
-                    View
-                  </Button>
+                  <Link href={`/admin/orders/${order.id}`} passHref>
+                    <Button variant="outline" size="sm">
+                      View
+                    </Button>
+                  </Link>
                 </td>
               </tr>
             ))

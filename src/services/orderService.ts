@@ -19,39 +19,39 @@ export interface OrderItem {
   options?: Record<string, any> | null;
 }
 
-export interface Order {
-  id: string;
-  order_number: string;
-  user_id: string | null;
-  status: OrderStatus;
-  subtotal: number;
-  tax: number;
-  delivery_fee: number;
-  discount: number;
-  total_amount: number;
-  payment_method: PaymentMethod;
-  payment_status: PaymentStatus;
-  delivery_address_id: string | null;
-  delivery_option: string;
-  special_instructions: string | null;
-  estimated_delivery: string | null;
-  placed_at: string;
-  created_at: string;
-  updated_at: string;
-  items?: OrderItem[];
-  delivery_address?: {
-    address_line: string;
-    city: string;
-    state: string;
-    postal_code: string;
-  };
-  timeline?: {
-    id: string;
-    status: string;
-    description: string | null;
-    time: string;
-  }[];
-}
+// export interface Order {
+//   id: string;
+//   order_number: string;
+//   user_id: string | null;
+//   status: OrderStatus;
+//   subtotal: number;
+//   tax: number;
+//   delivery_fee: number;
+//   discount: number;
+//   total_amount: number;
+//   payment_method: PaymentMethod;
+//   payment_status: PaymentStatus;
+//   delivery_address_id: string | null;
+//   delivery_option: string;
+//   special_instructions: string | null;
+//   estimated_delivery: string | null;
+//   placed_at: string;
+//   created_at: string;
+//   updated_at: string;
+//   items?: OrderItem[];
+//   delivery_address?: {
+//     address_line: string;
+//     city: string;
+//     state: string;
+//     postal_code: string;
+//   };
+//   timeline?: {
+//     id: string;
+//     status: string;
+//     description: string | null;
+//     time: string;
+//   }[];
+// }
 
 interface Rider {
   id: string;

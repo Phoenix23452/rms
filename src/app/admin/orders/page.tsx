@@ -1,19 +1,20 @@
 // app/admin/order/page.tsx
 
+import { getOrders } from "./actions";
 import OrdersClient from "./OrdersClient";
 
 export const dynamic = "force-dynamic"; // SSR with auto-updates
 
 export default async function OrderPage() {
-  // const products = await getProducts(); // SSR
+  const orders = await getOrders(); // SSR
   // const categories = await getCategories(); // SSR
   // const deals = await getDeals(); // SSR
 
   return (
     <OrdersClient
-    // initialProducts={products}
-    // categories={categories}
-    // deals={deals}
+      orders={orders}
+      // categories={categories}
+      // deals={deals}
     />
   );
 }

@@ -1,7 +1,6 @@
-import React from 'react'
+import React from "react";
+import CustomersPageClient from "./CustomerPageClient";
 
-export default function page() {
-  return (
-    <div>Customers</div>
-  )
+export default async function CustomerPage() {
+  return <CustomersPageClient />;
 }

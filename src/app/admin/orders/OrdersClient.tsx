@@ -1,79 +1,32 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FilterIcon } from "lucide-react";
-import { getOrdersByStatus, Order, OrderStatus } from "@/services/orderService";
-import OrderStatusBadge from "@/components/admin/orders/OrderStatusBadge";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Button } from "@/components/ui/button";
+// import { FilterIcon } from "lucide-react";
+// import { getOrdersByStatus } from "@/services/orderService";
+// import OrderStatusBadge from "@/components/admin/orders/OrderStatusBadge";
 import OrderFilters from "@/components/admin/orders/OrderFilters";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
 import OrdersTabs from "@/components/admin/orders/OrdersTabs";
 
-// Mock data for orders (later this will be replaced by actual API calls)
-const orders = [
-  {
-    id: "ORD-5291",
-    customerId: "CUST-2451",
-    customerName: "John Smith",
-    orderType: "Delivery",
-    paymentStatus: "Paid",
-    paymentMethod: "Card",
-    totalAmount: 32.5,
-    deliveryArea: "Downtown",
-    status: "Pending",
-    orderDate: "2025-04-08T14:30:00",
-  },
-  {
-    id: "ORD-5290",
-    customerId: "CUST-1872",
-    customerName: "Sarah Johnson",
-    orderType: "Pickup",
-    paymentStatus: "Paid",
-    paymentMethod: "Card",
-    totalAmount: 18.75,
-    deliveryArea: null,
-    status: "Confirmed",
-    orderDate: "2025-04-08T13:45:00",
-  },
-  {
-    id: "ORD-5289",
-    customerId: "CUST-3214",
-    customerName: "Michael Brown",
-    orderType: "Delivery",
-    paymentStatus: "Unpaid",
-    paymentMethod: "COD",
-    totalAmount: 45.2,
-    deliveryArea: "Westside",
-    status: "Processing",
-    orderDate: "2025-04-08T12:15:00",
-  },
-  {
-    id: "ORD-5288",
-    customerId: "CUST-9012",
-    customerName: "Emily Davis",
-    orderType: "Dine-in",
-    paymentStatus: "Paid",
-    paymentMethod: "Card",
-    totalAmount: 65.3,
-    deliveryArea: null,
-    status: "Completed",
-    orderDate: "2025-04-08T11:30:00",
-  },
-  {
-    id: "ORD-5287",
-    customerId: "CUST-7653",
-    customerName: "David Wilson",
-    orderType: "Delivery",
-    paymentStatus: "Paid",
-    paymentMethod: "Card",
-    totalAmount: 27.4,
-    deliveryArea: "Eastside",
-    status: "Out for Delivery",
-    orderDate: "2025-04-08T10:45:00",
-  },
-];
-
-const OrdersPage = () => {
+enum OrderStatus {
+  PANDING = "PANDING",
+  CONFIRMED = "CONFIRMED",
+  DISPATCHED = "DISPATCHED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+}
+enum OrderType {
+  PICKUP = "PICKUP",
+  DINEIN = "DINEIN",
+  DELIVERY = "DELIVERY",
+}
+enum PaymentType {
+  MOBILE_PAYMENT = "MOBILE_PAYMENT",
+  COD = "COD",
+  CARD_PAYMENT = "CARD_PAYMENT",
+}
+const OrdersPage = ({ orders }: { orders: Order[] }) => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [timeFilter, setTimeFilter] = useState("today");
@@ -81,66 +34,57 @@ const OrdersPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const filterOrders = async () => {
       try {
         setIsLoading(true);
-        let statusFilter: OrderStatus | OrderStatus[] = "pending";
+        let statusFilter: OrderStatus[] = [];
 
         // Define which orders to fetch based on activeFilter
+        // Use your enum instead of lowercase strings
         switch (activeFilter) {
           case "today":
-            statusFilter = [
-              "pending",
-              "confirmed",
-              "preparing",
-              "ready_for_pickup",
-              "out_for_delivery",
-              "delivered",
-              "cancelled",
-            ];
-            break;
-          case "pending":
-            statusFilter = "pending";
-            break;
-          case "confirmed":
-            statusFilter = "confirmed";
-            break;
-          case "out_for_delivery":
-            statusFilter = "out_for_delivery";
-            break;
-          case "completed":
-            statusFilter = "delivered";
-            break;
           case "all":
-            statusFilter = [
-              "pending",
-              "confirmed",
-              "preparing",
-              "ready_for_pickup",
-              "out_for_delivery",
-              "delivered",
-              "cancelled",
-            ];
-            break;
           case "delivery":
           case "pickup":
           case "dine-in":
           case "paid":
           case "cod":
-            // Fetch all and filter on front-end
             statusFilter = [
-              "pending",
-              "confirmed",
-              "preparing",
-              "ready_for_pickup",
-              "out_for_delivery",
-              "delivered",
-              "cancelled",
+              OrderStatus.PANDING,
+              OrderStatus.CONFIRMED,
+              OrderStatus.DISPATCHED,
+              OrderStatus.DELIVERED,
+              OrderStatus.CANCELLED,
             ];
+            break;
+
+          case "pending":
+            statusFilter = [OrderStatus.PANDING];
+            break;
+
+          case "confirmed":
+            statusFilter = [OrderStatus.CONFIRMED];
+            break;
+
+          case "out_for_delivery":
+          case "dispatched":
+            statusFilter = [OrderStatus.DISPATCHED];
+            break;
+
+          case "completed":
+            statusFilter = [OrderStatus.DELIVERED];
+            break;
+
+          case "cancelled":
+            statusFilter = [OrderStatus.CANCELLED];
+            break;
+
+          default:
+            statusFilter = [OrderStatus.PANDING];
             break;
         }
 
-        const data = await getOrdersByStatus(statusFilter);
+        const data = await filterOrderByStatus(statusFilter);
 
         // Apply front-end filters
         let filteredData = [...data];
@@ -148,32 +92,31 @@ const OrdersPage = () => {
         // Filter by delivery option or payment details
         if (activeFilter === "delivery") {
           filteredData = filteredData.filter(
-            (order) => order.delivery_option === "delivery",
+            (order) => order.orderType === OrderType.DELIVERY,
           );
         } else if (activeFilter === "pickup") {
           filteredData = filteredData.filter(
-            (order) => order.delivery_option === "pickup",
+            (order) => order.orderType === OrderType.PICKUP,
           );
         } else if (activeFilter === "dine-in") {
           filteredData = filteredData.filter(
-            (order) => order.delivery_option === "dine-in",
+            (order) => order.orderType === OrderType.DINEIN,
           );
         } else if (activeFilter === "paid") {
           filteredData = filteredData.filter(
-            (order) => order.payment_status === "completed",
+            (order) => order.paymentMethod === PaymentType.CARD_PAYMENT,
           );
         } else if (activeFilter === "cod") {
           filteredData = filteredData.filter(
-            (order) =>
-              order.payment_method === "cash" &&
-              order.payment_status === "pending",
+            (order) => order.paymentMethod === PaymentType.COD,
+            // order.payment_status === "pending",
           );
         } else if (activeFilter === "today") {
           // Filter for today's orders
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           filteredData = filteredData.filter((order) => {
-            const orderDate = new Date(order.placed_at);
+            const orderDate = new Date(order.createdAt);
             return orderDate >= today;
           });
         }
@@ -186,7 +129,7 @@ const OrdersPage = () => {
       }
     };
 
-    fetchOrders();
+    filterOrders();
   }, [activeFilter]);
 
   // Filter orders based on the active filter and search query
@@ -194,19 +137,21 @@ const OrdersPage = () => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
-        order.id.toLowerCase().includes(query) ||
-        order.customerName.toLowerCase().includes(query)
+        order.id.toLowerCase.includes(query) ||
+        order.customer?.fullName.toLowerCase().includes(query)
       );
     }
 
     // Here we're still using the mock data filters
     // This will be replaced by the real filters in the useEffect above
     if (activeFilter === "all") return true;
-    if (activeFilter === "delivery") return order.orderType === "Delivery";
-    if (activeFilter === "pickup") return order.orderType === "Pickup";
-    if (activeFilter === "dine-in") return order.orderType === "Dine-in";
-    if (activeFilter === "paid") return order.paymentStatus === "Paid";
-    if (activeFilter === "cod") return order.paymentMethod === "COD";
+    if (activeFilter === "delivery")
+      return order.orderType === OrderType.DELIVERY;
+    if (activeFilter === "pickup") return order.orderType === OrderType.PICKUP;
+    if (activeFilter === "dine-in") return order.orderType === OrderType.DINEIN;
+    if (activeFilter === "paid")
+      return order.paymentMethod === PaymentType.CARD_PAYMENT;
+    if (activeFilter === "cod") return order.paymentMethod === PaymentType.COD;
 
     return true;
   });
