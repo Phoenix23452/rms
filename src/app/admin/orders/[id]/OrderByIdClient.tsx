@@ -132,115 +132,95 @@ const OrderByIdClient = ({ order }: { order: Order }) => {
   );
 
   const handleStatusChange = (newStatus: string) => {
-    if (orderStatus === OrderStatus.PENDING && newStatus === "confirmed") {
-      setOrderStatus(OrderStatus.CONFIRMED);
-
-      // Add a new status entry to the history
-      const newStatusEntry = {
-        status: "Order Confirmed",
-        timestamp: new Date().toISOString(),
-        // note: "Order confirmed by restaurant",
-      };
-
-      order.timeline?.push(newStatusEntry);
-
-      // Start preparation timer if confirmed
-      setPreparationTimeLeft(parseInt(orderPreparationTime) * 60);
-
-      toast("Order Status Updated", {
-        description: "Order has been confirmed and kitchen notified.",
-      });
-    } else if (
-      orderStatus === OrderStatus.CONFIRMED &&
-      newStatus === OrderStatus.DISPATCHED
-    ) {
-      setOrderStatus(OrderStatus.DISPATCHED);
-
-      // Add a new status entry to the history
-      const newStatusEntry = {
-        status: "Order Processing",
-        timestamp: new Date().toISOString(),
-        note: "Order is being prepared by the kitchen",
-      };
-
-      order.timeline?.push(newStatusEntry);
-
-      toast("Order Status Updated", {
-        description: "Order is now being prepared by the kitchen.",
-      });
-    }
-
-    // Add a new status entry to the history
-    // const newStatusEntry = {
-    //   status: "Order Ready",
-    //   timestamp: new Date().toISOString(),
-    //   note:
-    //     order.orderType === "Delivery"
-    //       ? "Order ready for delivery"
-    //       : "Order ready for pickup",
-    // };
-
-    // order.statusHistory.push(newStatusEntry);
-
-    // toast("Order Status Updated", {
-    //   description: `Order is now ready for ${order.orderType.toLowerCase()}.`,
-    // });
-    else if (newStatus === "out-for-delivery") {
-      if (!selectedRider) {
-        setShowAssignRiderDialog(true);
-        return;
-      }
-
-      setOrderStatus(OrderStatus.DISPATCHED);
-
-      // Add a new status entry to the history
-      const newStatusEntry = {
-        status: "Out for Delivery",
-        timestamp: new Date().toISOString(),
-        note: `Order picked up by rider for delivery. Estimated delivery time: ${estimatedDeliveryTime} minutes`,
-      };
-
-      order.timeline?.push(newStatusEntry);
-
-      toast("Order Status Updated", {
-        description: "Order is now out for delivery.",
-      });
-    } else if (newStatus === "completed") {
-      setOrderStatus(OrderStatus.DELIVERED);
-
-      // Add a new status entry to the history
-      const newStatusEntry = {
-        status: "Order Completed",
-        timestamp: new Date().toISOString(),
-        note:
-          order.orderType === OrderType.DELIVERY
-            ? "Order delivered to customer"
-            : order.orderType === OrderType.PICKUP
-              ? "Order picked up by customer"
-              : "Customer has completed dining",
-      };
-
-      order.timeline?.push(newStatusEntry);
-
-      toast("Order Completed", {
-        description: "Order has been successfully completed.",
-      });
-    } else if (newStatus === "cancelled") {
-      setOrderStatus(OrderStatus.CANCELLED);
-
-      // Add a new status entry to the history
-      const newStatusEntry = {
-        status: "Order Cancelled",
-        timestamp: new Date().toISOString(),
-        note: "Order has been cancelled",
-      };
-
-      order.statusHistory.push(newStatusEntry);
-
-      toast.error("Order Cancelled", {
-        description: "Order has been cancelled.",
-      });
-    }
+    // if (orderStatus === OrderStatus.PENDING && newStatus === "confirmed") {
+    //   setOrderStatus(OrderStatus.CONFIRMED);
+    //   // Add a new status entry to the history
+    //   const newStatusEntry = {
+    //     status: "Order Confirmed",
+    //     timestamp: new Date().toISOString(),
+    //     // note: "Order confirmed by restaurant",
+    //   };
+    //   order.timeline?.push(newStatusEntry);
+    //   // Start preparation timer if confirmed
+    //   setPreparationTimeLeft(parseInt(orderPreparationTime) * 60);
+    //   toast("Order Status Updated", {
+    //     description: "Order has been confirmed and kitchen notified.",
+    //   });
+    // } else if (
+    //   orderStatus === OrderStatus.CONFIRMED &&
+    //   newStatus === OrderStatus.DISPATCHED
+    // ) {
+    //   setOrderStatus(OrderStatus.DISPATCHED);
+    //   // Add a new status entry to the history
+    //   const newStatusEntry = {
+    //     status: "Order Processing",
+    //     timestamp: new Date().toISOString(),
+    //     note: "Order is being prepared by the kitchen",
+    //   };
+    //   order.timeline?.push(newStatusEntry);
+    //   toast("Order Status Updated", {
+    //     description: "Order is now being prepared by the kitchen.",
+    //   });
+    // }
+    // // Add a new status entry to the history
+    // // const newStatusEntry = {
+    // //   status: "Order Ready",
+    // //   timestamp: new Date().toISOString(),
+    // //   note:
+    // //     order.orderType === "Delivery"
+    // //       ? "Order ready for delivery"
+    // //       : "Order ready for pickup",
+    // // };
+    // // order.statusHistory.push(newStatusEntry);
+    // // toast("Order Status Updated", {
+    // //   description: `Order is now ready for ${order.orderType.toLowerCase()}.`,
+    // // });
+    // else if (newStatus === "out-for-delivery") {
+    //   if (!selectedRider) {
+    //     setShowAssignRiderDialog(true);
+    //     return;
+    //   }
+    //   setOrderStatus(OrderStatus.DISPATCHED);
+    //   // Add a new status entry to the history
+    //   const newStatusEntry = {
+    //     status: "Out for Delivery",
+    //     timestamp: new Date().toISOString(),
+    //     note: `Order picked up by rider for delivery. Estimated delivery time: ${estimatedDeliveryTime} minutes`,
+    //   };
+    //   order.timeline?.push(newStatusEntry);
+    //   toast("Order Status Updated", {
+    //     description: "Order is now out for delivery.",
+    //   });
+    // } else if (newStatus === "completed") {
+    //   setOrderStatus(OrderStatus.DELIVERED);
+    //   // Add a new status entry to the history
+    //   const newStatusEntry = {
+    //     status: "Order Completed",
+    //     timestamp: new Date().toISOString(),
+    //     note:
+    //       order.orderType === OrderType.DELIVERY
+    //         ? "Order delivered to customer"
+    //         : order.orderType === OrderType.PICKUP
+    //           ? "Order picked up by customer"
+    //           : "Customer has completed dining",
+    //   };
+    //   order.timeline?.push(newStatusEntry);
+    //   toast("Order Completed", {
+    //     description: "Order has been successfully completed.",
+    //   });
+    // } else if (newStatus === "cancelled") {
+    //   setOrderStatus(OrderStatus.CANCELLED);
+    //   // Add a new status entry to the history
+    //   const newStatusEntry = {
+    //     status: "Order Cancelled",
+    //     timestamp: new Date().toISOString(),
+    //     note: "Order has been cancelled",
+    //   };
+    //   order.statusHistory.push(newStatusEntry);
+    //   toast.error("Order Cancelled", {
+    //     description: "Order has been cancelled.",
+    //   });
+    // }
   };
 
   const handleAssignRider = () => {
@@ -254,30 +234,30 @@ const OrderByIdClient = ({ order }: { order: Order }) => {
     setAssigningRider(true);
 
     // Simulate API call
-    setTimeout(() => {
-      const selectedRiderObj = availableRiders.find(
-        (r) => r.id.toString() === selectedRider,
-      );
-      if (selectedRiderObj) {
-        order.assignedRider = selectedRiderObj;
+    // setTimeout(() => {
+    //   const selectedRiderObj = availableRiders.find(
+    //     (r) => r.id.toString() === selectedRider,
+    //   );
+    //   if (selectedRiderObj) {
+    //     order.assignedRider = selectedRiderObj;
 
-        // Add a new status entry to the history
-        const newStatusEntry = {
-          status: "Rider Assigned",
-          timestamp: new Date().toISOString(),
-          note: `${selectedRiderObj.name} has been assigned to this order`,
-        };
+    //     // Add a new status entry to the history
+    //     const newStatusEntry = {
+    //       status: "Rider Assigned",
+    //       timestamp: new Date().toISOString(),
+    //       note: `${selectedRiderObj.name} has been assigned to this order`,
+    //     };
 
-        order.timeline?.push(newStatusEntry);
-      }
+    //     order.timeline?.push(newStatusEntry);
+    //   }
 
-      setAssigningRider(false);
-      setShowAssignRiderDialog(false);
+    //   setAssigningRider(false);
+    //   setShowAssignRiderDialog(false);
 
-      toast("Rider Assigned", {
-        description: "Rider has been successfully assigned to this order.",
-      });
-    }, 1000);
+    //   toast("Rider Assigned", {
+    //     description: "Rider has been successfully assigned to this order.",
+    //   });
+    // }, 1000);
   };
 
   const handlePrintInvoice = () => {
@@ -598,17 +578,17 @@ const OrderByIdClient = ({ order }: { order: Order }) => {
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
                       <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-medium">
-                        {order.assignedRider.name.charAt(0)}
+                        {/* {order.assignedRider.name.charAt(0)} */}
                       </div>
                       <div className="flex-1">
                         <div className="font-medium">
-                          {order.assignedRider.name}
+                          {/* {order.assignedRider.name} */}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Currently assigned
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {order.assignedRider.phone}
+                          {/* {order.assignedRider.phone} */}
                         </div>
                       </div>
                     </div>
