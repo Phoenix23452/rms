@@ -8,9 +8,10 @@ import React, { useState, useEffect } from "react";
 import OrderFilters from "@/components/admin/orders/OrderFilters";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
 import OrdersTabs from "@/components/admin/orders/OrdersTabs";
+import { getOrders } from "./actions";
 
 enum OrderStatus {
-  PANDING = "PANDING",
+  PENDING = "PENDING",
   CONFIRMED = "CONFIRMED",
   DISPATCHED = "DISPATCHED",
   DELIVERED = "DELIVERED",
@@ -29,131 +30,73 @@ enum PaymentType {
 const OrdersPage = ({ orders }: { orders: Order[] }) => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [timeFilter, setTimeFilter] = useState("today");
-  const [realOrders, setRealOrders] = useState<Order[]>([]);
+  const [timeFilter, setTimeFilter] = useState("this_month");
+  const [remoteOrders, setRemoteOrders] = useState<Order[]>(orders);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 🧠 Sync SSR orders whenever prop changes (important for hydration + Fast Refresh)
   useEffect(() => {
-    const filterOrders = async () => {
+    setRemoteOrders(orders ?? []);
+  }, [orders]);
+
+  // 🕐 Only fetch when timeFilter changes
+  useEffect(() => {
+    const fetchOrders = async () => {
       try {
         setIsLoading(true);
-        let statusFilter: OrderStatus[] = [];
-
-        // Define which orders to fetch based on activeFilter
-        // Use your enum instead of lowercase strings
-        switch (activeFilter) {
-          case "today":
-          case "all":
-          case "delivery":
-          case "pickup":
-          case "dine-in":
-          case "paid":
-          case "cod":
-            statusFilter = [
-              OrderStatus.PANDING,
-              OrderStatus.CONFIRMED,
-              OrderStatus.DISPATCHED,
-              OrderStatus.DELIVERED,
-              OrderStatus.CANCELLED,
-            ];
-            break;
-
-          case "pending":
-            statusFilter = [OrderStatus.PANDING];
-            break;
-
-          case "confirmed":
-            statusFilter = [OrderStatus.CONFIRMED];
-            break;
-
-          case "out_for_delivery":
-          case "dispatched":
-            statusFilter = [OrderStatus.DISPATCHED];
-            break;
-
-          case "completed":
-            statusFilter = [OrderStatus.DELIVERED];
-            break;
-
-          case "cancelled":
-            statusFilter = [OrderStatus.CANCELLED];
-            break;
-
-          default:
-            statusFilter = [OrderStatus.PANDING];
-            break;
-        }
-
-        const data = await filterOrderByStatus(statusFilter);
-
-        // Apply front-end filters
-        let filteredData = [...data];
-
-        // Filter by delivery option or payment details
-        if (activeFilter === "delivery") {
-          filteredData = filteredData.filter(
-            (order) => order.orderType === OrderType.DELIVERY,
-          );
-        } else if (activeFilter === "pickup") {
-          filteredData = filteredData.filter(
-            (order) => order.orderType === OrderType.PICKUP,
-          );
-        } else if (activeFilter === "dine-in") {
-          filteredData = filteredData.filter(
-            (order) => order.orderType === OrderType.DINEIN,
-          );
-        } else if (activeFilter === "paid") {
-          filteredData = filteredData.filter(
-            (order) => order.paymentMethod === PaymentType.CARD_PAYMENT,
-          );
-        } else if (activeFilter === "cod") {
-          filteredData = filteredData.filter(
-            (order) => order.paymentMethod === PaymentType.COD,
-            // order.payment_status === "pending",
-          );
-        } else if (activeFilter === "today") {
-          // Filter for today's orders
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          filteredData = filteredData.filter((order) => {
-            const orderDate = new Date(order.createdAt);
-            return orderDate >= today;
-          });
-        }
-
-        setRealOrders(filteredData);
+        const freshOrders = await getOrders(timeFilter);
+        setRemoteOrders(freshOrders);
       } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Failed to fetch orders:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    filterOrders();
-  }, [activeFilter]);
+    fetchOrders();
+  }, [timeFilter]);
 
-  // Filter orders based on the active filter and search query
-  const filteredOrders = orders.filter((order) => {
+  console.log("Remote Orders:", remoteOrders);
+  console.log("Active Filter:", activeFilter);
+  console.log("Orders:", orders);
+
+  // 🧠 Apply all other filters locally (activeFilter + searchQuery)
+  const filteredOrders = remoteOrders.filter((order) => {
+    let match = true;
+
+    // 🔍 Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return (
-        order.id.toLowerCase.includes(query) ||
-        order.customer?.fullName.toLowerCase().includes(query)
-      );
+      match =
+        (order.id.toString().toLowerCase().includes(query) ||
+          order.customer?.fullName?.toLowerCase().includes(query)) ??
+        false;
     }
 
-    // Here we're still using the mock data filters
-    // This will be replaced by the real filters in the useEffect above
-    if (activeFilter === "all") return true;
-    if (activeFilter === "delivery")
-      return order.orderType === OrderType.DELIVERY;
-    if (activeFilter === "pickup") return order.orderType === OrderType.PICKUP;
-    if (activeFilter === "dine-in") return order.orderType === OrderType.DINEIN;
-    if (activeFilter === "paid")
-      return order.paymentMethod === PaymentType.CARD_PAYMENT;
-    if (activeFilter === "cod") return order.paymentMethod === PaymentType.COD;
+    // ⚙️ Status / Type / Payment filters
+    if (activeFilter === "delivery") {
+      match = match && order.orderType === OrderType.DELIVERY;
+    } else if (activeFilter === "pickup") {
+      match = match && order.orderType === OrderType.PICKUP;
+    } else if (activeFilter === "dine-in") {
+      match = match && order.orderType === OrderType.DINEIN;
+    } else if (activeFilter === "paid") {
+      match = match && order.paymentMethod === PaymentType.CARD_PAYMENT;
+    } else if (activeFilter === "cod") {
+      match = match && order.paymentMethod === PaymentType.COD;
+    } else if (activeFilter === "pending") {
+      match = match && order.status === OrderStatus.PENDING;
+    } else if (activeFilter === "confirmed") {
+      match = match && order.status === OrderStatus.CONFIRMED;
+    } else if (activeFilter === "out_for_delivery") {
+      match = match && order.status === OrderStatus.DISPATCHED;
+    } else if (activeFilter === "completed") {
+      match = match && order.status === OrderStatus.DELIVERED;
+    } else if (activeFilter === "cancelled") {
+      match = match && order.status === OrderStatus.CANCELLED;
+    }
 
-    return true;
+    return match;
   });
 
   return (
@@ -176,9 +119,7 @@ const OrdersPage = ({ orders }: { orders: Order[] }) => {
         {isLoading ? (
           <div className="py-8 text-center">Loading orders...</div>
         ) : (
-          <OrdersTable
-            orders={realOrders.length > 0 ? realOrders : filteredOrders}
-          />
+          <OrdersTable orders={filteredOrders} />
         )}
       </OrdersTabs>
     </div>

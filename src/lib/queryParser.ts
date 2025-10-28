@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function setDeepValue(obj: any, path: string[], value: any) {
   let current = obj;
   for (let i = 0; i < path.length; i++) {

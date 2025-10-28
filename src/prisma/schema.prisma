@@ -44,7 +44,7 @@ enum CustomerStatus {
 }
 
 enum OrderStatus {
-  PANDING
+  PENDING
   CONFIRMED
   DISPATCHED
   DELIVERED
@@ -178,7 +178,7 @@ model Order {
   deliveryFee   Float       @default(0)
   tax           Float       @default(0)
   tip           Float       @default(0)
-  status        OrderStatus @default(PANDING)
+  status        OrderStatus @default(PENDING)
   paymentMethod PaymentType // e.g., "Card (**** 1234)"
   createdAt     DateTime    @default(now())
   orderType     OrderType   @default(DELIVERY)

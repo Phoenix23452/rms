@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // lib/apiHandler.ts
 
 import { NextRequest } from "next/server";
@@ -5,6 +7,7 @@ import { parseQueryParams } from "@/lib/queryParser"; // Parses query parameters
 import { schemaRegistry } from "@/lib/validators"; // Central registry for all Zod validation schemas
 import { NextError, NextSuccess } from "@/lib/apiResponse"; // Utility functions to standardize success/error API responses
 import { ZodObject } from "zod";
+import { applyGenericDateFilter } from "./applyGenericDateFilter";
 
 /**
  * Creates list-level API handlers (GET for list, POST for creation)
@@ -23,9 +26,13 @@ export function createAPIHandlers<T>(repo: any, schemaKey: string) {
         const { where, include, take, orderBy } =
           parseQueryParams(searchParams);
 
+        const whereWithDate = applyGenericDateFilter(where, searchParams);
+
+        // 🔥 Merge date filters into where clause
+        // const finalWhere = { ...where, ...whereWithDate };
         // Fetch data from the repo with parsed filters
         const data = await repo.getAll({
-          where,
+          where: whereWithDate,
           include,
           take,
           orderBy,

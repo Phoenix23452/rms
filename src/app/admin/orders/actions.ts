@@ -7,9 +7,9 @@ import { revalidatePath } from "next/cache";
 
 const API_BASE = config.env.apiEndpoint || "http://localhost:3000";
 
-export async function getOrders() {
+export async function getOrders(range = "this_month") {
   const res = await fetch(
-    `${API_BASE}/api/orders?include=customer,items.variant.product`,
+    `${API_BASE}/api/orders?include=customer,items.variant.product&dateRange=${range}`,
     {
       cache: "no-store",
     },
