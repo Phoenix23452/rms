@@ -17,6 +17,16 @@ export async function getOrders(range = "this_month") {
   const { data } = await res.json();
   return data;
 }
+export async function getOrdersById(id: number) {
+  const res = await fetch(
+    `${API_BASE}/api/orders?include=customer,items.variant.product,timeline&id=${id}`,
+    {
+      cache: "no-store",
+    },
+  );
+  const { data } = await res.json();
+  return data;
+}
 
 export async function addCategory(category: any) {
   await fetch(`${API_BASE}/api/categories`, {

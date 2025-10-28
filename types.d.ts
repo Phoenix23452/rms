@@ -124,6 +124,7 @@ type Order = {
   tip: number;
   status: OrderStatus;
   paymentMethod: PaymentType;
+  paymentStatus: PaymentStatus; // Need to setup in Card Payment
   createdAt?: string;
   orderType: OrderType;
   deliveryNote?: string | null;
@@ -218,4 +219,9 @@ enum PaymentType {
   MOBILE_PAYMENT = "MOBILE_PAYMENT",
   COD = "COD",
   CARD_PAYMENT = "CARD_PAYMENT",
+}
+
+enum PaymentStatus {
+  PAID = "PAID",
+  UNPAID = "UNPAID",
 }

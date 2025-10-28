@@ -90,7 +90,7 @@ const OrdersTable = ({ orders }: OrdersTableProps) => {
                 className="border-b border-border hover:bg-muted/50 cursor-pointer"
                 onClick={() => handleViewOrder(String(order.id))}
               >
-                <td className="py-3 px-2">ORD- {order.id}</td>
+                <td className="py-3 px-2">ORD-{order.id}</td>
                 <td className="py-3 px-2">
                   <div>
                     <div className="font-medium">{getCustomerName(order)}</div>
