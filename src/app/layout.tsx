@@ -4,7 +4,7 @@ import "./globals.css";
 import "./App.css";
 import { Toaster } from "@/components/ui/sonner";
 import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import SessionProviderWrapper from "@/components/auth/SessionProviderWrapper";
 const geistSans = Geist({
   variable: "--font-geist-sans",
