@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 
 /**
@@ -30,18 +31,40 @@ function formatMultilineError(raw: string): string[] {
 }
 
 /**
+ * Recursively extracts all `_errors` arrays from a Zod formatted error object
+ */
+function collectZodErrors(obj: any, result: string[] = []): string[] {
+  if (!obj || typeof obj !== "object") return result;
+
+  // If object has an "_errors" array, add its messages
+  if (Array.isArray(obj._errors) && obj._errors.length > 0) {
+    result.push(...obj._errors);
+  }
+
+  // Recurse into nested objects
+  for (const key in obj) {
+    if (key !== "_errors") {
+      collectZodErrors(obj[key], result);
+    }
+  }
+
+  return result;
+}
+/**
  * Extracts a useful summary line from a stack error
  */
-function extractSummary(lines: string[]): string | null {
-  return (
-    lines.find(
-      (line) =>
-        line.toLowerCase().includes("argument") ||
-        line.toLowerCase().includes("missing"),
-    ) ||
-    lines[lines.length - 1] ||
-    null
-  );
+function extractSummary(err: any): string | null {
+  if (typeof err === "string" && err.includes("\n")) {
+    const lines = formatMultilineError(err);
+    return lines.join("\n");
+  }
+
+  if (typeof err === "object" && err !== null) {
+    const allErrors = collectZodErrors(err);
+    if (allErrors.length > 0) return allErrors.join("\n");
+  }
+
+  return null;
 }
 
 /**
@@ -52,12 +75,15 @@ function extractSummary(lines: string[]): string | null {
  * - summary: short user-facing summary (for toasts)
  */
 export function NextError(message: string, err?: any, status = 400) {
-  let formatted: string[] | null = null;
+  let formatted: any = null;
   let summary: string | null = null;
 
   if (typeof err === "string" && err.includes("\n")) {
     formatted = formatMultilineError(err);
     summary = extractSummary(formatted);
+  } else if (typeof err === "object" && err !== null) {
+    formatted = err; // include object as-is (e.g., Zod flattened errors)
+    summary = extractSummary(err); // collect all _errors recursively
   }
 
   return NextResponse.json(

@@ -63,15 +63,16 @@ export function createAPIHandlers<T>(repo: any, schemaKey: string) {
 
         // Validate request body using Zod
         const parsed = schema.safeParse(body);
-        console.log(parsed);
+        console.log("Hello ", parsed.error?.flatten());
         if (!parsed.success) {
-          return NextError("Validation failed", parsed.error.format(), 400);
+          return NextError("Validation failed", parsed.error?.format(), 400);
         }
 
         // Save the validated data
         const created = await repo.create(parsed.data);
         return NextSuccess("Created successfully", created, 201);
       } catch (err: any) {
+        console.error("Creation error:", err);
         return NextError("Failed to create record", err.message || err, 500);
       }
     },

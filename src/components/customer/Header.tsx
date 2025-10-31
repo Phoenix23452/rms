@@ -3,20 +3,21 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 // import { useAuth } from "@/contexts/AuthContext"; // disabled for now
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const Header = () => {
-  // 🔧 Dummy values for now
-  const user = { email: "demo@user.com" };
   const [cartCount, setCartCount] = useState(0);
   const isAuthenticated = false; // change to true to simulate logged-in state
   const logout = async () => {
     console.log("Fake logout called");
   };
+  const { data: session, status } = useSession();
+
+  console.log("Session data:", session);
+  console.log("Session status:", status);
 
   // Debug authentication state
-  useEffect(() => {
-    console.log("Header auth state:", { isAuthenticated, user: user?.email });
-  }, [isAuthenticated, user]);
+  useEffect(() => {}, []);
 
   const getCartCount = () => {
     if (typeof window === "undefined") return 0; // ✅ SSR safety
@@ -28,6 +29,7 @@ const Header = () => {
       return Array.isArray(parsedCart)
         ? parsedCart.reduce((total, item) => total + (item.quantity || 0), 0)
         : 0;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return 0;
     }
@@ -118,7 +120,7 @@ const Header = () => {
               </Link>
               <Link href={"/profile"}>
                 <Button size="sm" variant="ghost">
-                  Profile ({user?.email?.split("@")[0]})
+                  {/* Profile ({user?.email?.split("@")[0]}) */}
                 </Button>
               </Link>
               <Button size="sm" variant="destructive" onClick={handleLogout}>
