@@ -3,21 +3,41 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 // import { useAuth } from "@/contexts/AuthContext"; // disabled for now
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const Header = () => {
   const [cartCount, setCartCount] = useState(0);
-  const isAuthenticated = false; // change to true to simulate logged-in state
-  const logout = async () => {
-    console.log("Fake logout called");
-  };
   const { data: session, status } = useSession();
-
+  const isAuthenticated = Boolean(session);
   console.log("Session data:", session);
   console.log("Session status:", status);
 
   // Debug authentication state
   useEffect(() => {}, []);
+  // ✅ Auto sign-in admin if no session
+  useEffect(() => {
+    const autoAdminSignIn = async () => {
+      if (status === "unauthenticated") {
+        try {
+          const res = await signIn("admin-login", {
+            redirect: false,
+            email: "m.taha14785@gmail.com", // your seed admin email
+            password: "12345678", // must match your stored admin password
+          });
+
+          if (res?.error) {
+            console.error("Auto admin sign-in failed:", res.error);
+          } else {
+            console.log("✅ Admin auto signed in successfully");
+          }
+        } catch (err) {
+          console.error("Auto admin sign-in error:", err);
+        }
+      }
+    };
+
+    autoAdminSignIn();
+  }, [status]);
 
   const getCartCount = () => {
     if (typeof window === "undefined") return 0; // ✅ SSR safety
@@ -50,7 +70,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -120,7 +140,7 @@ const Header = () => {
               </Link>
               <Link href={"/profile"}>
                 <Button size="sm" variant="ghost">
-                  {/* Profile ({user?.email?.split("@")[0]}) */}
+                  Profile ({session?.user?.name?.split("@")[0]})
                 </Button>
               </Link>
               <Button size="sm" variant="destructive" onClick={handleLogout}>

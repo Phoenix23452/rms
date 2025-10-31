@@ -7,6 +7,12 @@ export default class UserRepository extends BaseRepository<User> {
   constructor() {
     super(prisma.user);
   }
+  /**
+   * Generate unique codes for customers, riders, and admins
+   */
+  private generateCode(prefix: string): string {
+    return `${prefix}-${Date.now()}`;
+  }
 
   /**
    * Create a new user with optional relations (customer, rider, admin)
@@ -51,6 +57,23 @@ export default class UserRepository extends BaseRepository<User> {
         connectedCustomerId = newCustomer.id;
       }
     }
+    // ✅ Prepare rider creation with auto riderCode
+    const riderData = rider
+      ? {
+          ...rider,
+          riderCode: rider.riderCode ?? this.generateCode("RID"),
+          status: rider.status ?? "ACTIVE",
+        }
+      : undefined;
+
+    // ✅ Prepare admin creation with auto adminCode
+    const adminData = admin
+      ? {
+          ...admin,
+          adminCode: admin.adminCode ?? this.generateCode("ADM"),
+          status: admin.status ?? "ACTIVE",
+        }
+      : undefined;
     return this.modelClient.create({
       data: {
         ...userData,
@@ -67,17 +90,17 @@ export default class UserRepository extends BaseRepository<User> {
                 },
               }
             : {}),
-        ...(rider
+        ...(riderData
           ? {
               rider: {
-                create: rider,
+                create: riderData,
               },
             }
           : {}),
-        ...(admin
+        ...(adminData
           ? {
               admin: {
-                create: admin,
+                create: adminData,
               },
             }
           : {}),
